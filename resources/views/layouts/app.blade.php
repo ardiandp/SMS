@@ -30,6 +30,9 @@
                         @can('viewAny', App\Models\Assessment::class)
                             <a href="{{ route('assessments.index') }}" class="text-gray-600 hover:text-indigo-600">Penilaian</a>
                         @endcan
+                        @can('viewAny', App\Models\FinalGrade::class)
+                            <a href="{{ route('final-grades.index') }}" class="text-gray-600 hover:text-indigo-600">Nilai Akhir</a>
+                        @endcan
                         <a href="{{ route('schools.select') }}" class="text-gray-600 hover:text-indigo-600">Ganti Sekolah</a>
                     </div>
                 @endif

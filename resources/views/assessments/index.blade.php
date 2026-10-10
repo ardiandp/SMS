@@ -10,6 +10,10 @@
                 <a href="{{ route('assessments.categories.index') }}"
                    class="rounded border border-gray-400 px-3 py-1.5 hover:bg-gray-50">Kategori</a>
             @endcan
+            @can('viewAny', App\Models\GradingPolicy::class)
+                <a href="{{ route('grading-policies.index') }}"
+                   class="rounded border border-gray-400 px-3 py-1.5 hover:bg-gray-50">Kebijakan</a>
+            @endcan
         </div>
     </div>
 

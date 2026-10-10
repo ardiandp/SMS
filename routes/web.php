@@ -12,6 +12,8 @@ use App\Http\Controllers\ClassroomController;
 use App\Http\Controllers\ClassScheduleController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\FinalGradeController;
+use App\Http\Controllers\GradingPolicyController;
 use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\ReferenceDataController;
 use App\Http\Controllers\SchoolSwitchController;
@@ -146,5 +148,15 @@ Route::middleware('auth')->group(function () {
         Route::get('assessment-categories', [AssessmentCategoryController::class, 'index'])->name('assessments.categories.index');
         Route::post('assessment-categories', [AssessmentCategoryController::class, 'store'])->name('assessments.categories.store');
         Route::put('assessment-categories/{assessmentCategory}', [AssessmentCategoryController::class, 'update'])->name('assessments.categories.update');
+
+        // Kebijakan penilaian & nilai akhir (PRD-04).
+        Route::get('grading-policies', [GradingPolicyController::class, 'index'])->name('grading-policies.index');
+        Route::post('grading-policies', [GradingPolicyController::class, 'store'])->name('grading-policies.store');
+        Route::post('grading-policies/{gradingPolicy}/activate', [GradingPolicyController::class, 'activate'])->name('grading-policies.activate');
+
+        Route::get('final-grades', [FinalGradeController::class, 'index'])->name('final-grades.index');
+        Route::post('teaching-assignments/{teachingAssignment}/final-grades/calculate', [FinalGradeController::class, 'calculate'])->name('final-grades.calculate');
+        Route::post('final-grades/{finalGrade}/finalize', [FinalGradeController::class, 'finalize'])->name('final-grades.finalize');
+        Route::put('final-grades/{finalGrade}/correct', [FinalGradeController::class, 'correct'])->name('final-grades.correct');
     });
 });
