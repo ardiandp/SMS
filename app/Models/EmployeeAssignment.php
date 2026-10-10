@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use App\Domain\Tenancy\ScopedBySchool;
+use Database\Factories\EmployeeAssignmentFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EmployeeAssignment extends Model
 {
-    use ScopedBySchool;
+    /** @use HasFactory<EmployeeAssignmentFactory> */
+    use HasFactory, ScopedBySchool;
 
     protected $fillable = [
         'school_id',

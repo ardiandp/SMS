@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserStatus;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -31,7 +32,16 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'last_login_at' => 'datetime',
+            'status' => UserStatus::class,
         ];
+    }
+
+    /**
+     * Whether the account is allowed to authenticate.
+     */
+    public function isActive(): bool
+    {
+        return $this->status === UserStatus::Active;
     }
 
     /**

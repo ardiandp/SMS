@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\UserStatus;
 use App\Models\School;
 use App\Models\SchoolUserMembership;
 use App\Models\User;
@@ -75,7 +76,73 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->assertSame('active', $user->fresh()->status);
+        $this->assertSame(UserStatus::Active, $user->fresh()->status);
+        $this->assertTrue($user->fresh()->isActive());
+    }
+
+    public function test_inactive_user_cannot_login(): void
+    {
+        $school = School::factory()->create();
+        $user = User::factory()->create([
+            'password' => 'secret-password',
+            'status' => UserStatus::Inactive,
+        ]);
+
+        SchoolUserMembership::factory()->create([
+            'school_id' => $school->id,
+            'user_id' => $user->id,
+        ]);
+
+        $response = $this->from('/login')->post('/login', [
+            'email' => $user->email,
+            'password' => 'secret-password',
+        ]);
+
+        $response->assertRedirect('/login');
+        $response->assertSessionHasErrors('email');
+        $this->assertGuest();
+        $this->assertNull($user->fresh()->last_login_at);
+    }
+
+    public function test_suspended_user_cannot_login(): void
+    {
+        $user = User::factory()->create([
+            'password' => 'secret-password',
+            'status' => UserStatus::Suspended,
+        ]);
+
+        $this->from('/login')->post('/login', [
+            'email' => $user->email,
+            'password' => 'secret-password',
+        ])->assertRedirect('/login');
+
+        $this->assertGuest();
+    }
+
+    public function test_inactive_user_login_error_does_not_reveal_account_state(): void
+    {
+        $inactive = User::factory()->create([
+            'password' => 'secret-password',
+            'status' => UserStatus::Inactive,
+        ]);
+
+        // Pesan untuk akun nonaktif harus identik dengan kredensial salah,
+        // supaya login endpoint tidak bisa dipakai untuk memprobe status akun.
+        $this->from('/login')
+            ->post('/login', [
+                'email' => $inactive->email,
+                'password' => 'secret-password',
+            ])
+            ->assertSessionHasErrors(['email' => 'Email atau password salah.']);
+
+        $this->from('/login')
+            ->post('/login', [
+                'email' => 'tidak-ada@example.test',
+                'password' => 'secret-password',
+            ])
+            ->assertSessionHasErrors(['email' => 'Email atau password salah.']);
+
+        $this->assertGuest();
     }
 
     public function test_logout_invalidates_session(): void

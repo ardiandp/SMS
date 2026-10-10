@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Domain\Students\StudentService;
 use App\Enums\StudentStatus;
+use App\Http\Requests\LinkGuardianRequest;
 use App\Http\Requests\StoreStudentRequest;
 use App\Models\Student;
 use Illuminate\Http\RedirectResponse;
@@ -12,9 +13,7 @@ use Illuminate\View\View;
 
 class StudentController extends Controller
 {
-    public function __construct(private readonly StudentService $students)
-    {
-    }
+    public function __construct(private readonly StudentService $students) {}
 
     /**
      * Server-side search + pagination, scoped to the current tenant.
@@ -77,6 +76,8 @@ class StudentController extends Controller
 
     public function update(StoreStudentRequest $request, Student $student): RedirectResponse
     {
+        $this->authorize('update', $student);
+
         $this->students->update($student, $request->validated(), $request->user());
 
         return redirect()->route('students.show', $student)
@@ -86,21 +87,14 @@ class StudentController extends Controller
     /**
      * Link a guardian to this student (both must belong to the same tenant).
      */
-    public function linkGuardian(Request $request, Student $student): RedirectResponse
+    public function linkGuardian(LinkGuardianRequest $request, Student $student): RedirectResponse
     {
         $this->authorize('update', $student);
 
-        $request->validate([
-            'guardian_id' => ['required', 'integer', 'exists:guardians,id'],
-            'relationship' => ['required', 'string', 'max:50'],
-        ]);
-
-        $guardian = \App\Models\Guardian::findOrFail($request->input('guardian_id'));
-
         $this->students->linkGuardian(
             $student,
-            $guardian,
-            $request->input('relationship'),
+            $request->guardian(),
+            $request->string('relationship')->toString(),
             $request->user(),
         );
 
@@ -112,7 +106,7 @@ class StudentController extends Controller
     {
         $this->authorize('delete', $student);
 
-        $student->delete();
+        $this->students->deactivate($student, $request->user());
 
         return redirect()->route('students.index')
             ->with('status', 'Siswa dinonaktifkan.');

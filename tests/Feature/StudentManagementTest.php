@@ -6,6 +6,7 @@ use App\Models\Guardian;
 use App\Models\School;
 use App\Models\Student;
 use App\Models\StudentGuardian;
+use App\Models\StudentStatusHistory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\InteractsWithTenancy;
@@ -113,5 +114,206 @@ class StudentManagementTest extends TestCase
             ->assertNotFound();
 
         $this->assertSame($foreignStudent->full_name, $foreignStudent->fresh()->full_name);
+    }
+
+    public function test_update_is_audited(): void
+    {
+        $student = Student::factory()->create([
+            'school_id' => $this->school->id,
+            'full_name' => 'Nama Lama',
+        ]);
+
+        $this->actingInSchool($this->admin, $this->school)
+            ->put("/students/{$student->id}", [
+                'nis' => $student->nis,
+                'full_name' => 'Nama Baru',
+                'status' => 'active',
+            ])
+            ->assertRedirect(route('students.show', $student));
+
+        $this->assertSame('Nama Baru', $student->fresh()->full_name);
+
+        $this->assertDatabaseHas('audit_logs', [
+            'school_id' => $this->school->id,
+            'actor_user_id' => $this->admin->id,
+            'action' => 'student.updated',
+            'subject_id' => $student->id,
+        ]);
+    }
+
+    public function test_updating_status_records_a_status_history_entry(): void
+    {
+        $student = Student::factory()->create([
+            'school_id' => $this->school->id,
+            'status' => 'active',
+        ]);
+
+        $this->actingInSchool($this->admin, $this->school)
+            ->put("/students/{$student->id}", [
+                'nis' => $student->nis,
+                'full_name' => $student->full_name,
+                'status' => 'withdrawn',
+            ])
+            ->assertRedirect(route('students.show', $student));
+
+        $this->assertSame('withdrawn', $student->fresh()->status->value);
+
+        $this->assertDatabaseHas('student_status_histories', [
+            'student_id' => $student->id,
+            'from_status' => 'active',
+            'to_status' => 'withdrawn',
+            'changed_by' => $this->admin->id,
+        ]);
+    }
+
+    public function test_update_without_status_change_does_not_add_history(): void
+    {
+        $student = Student::factory()->create([
+            'school_id' => $this->school->id,
+            'status' => 'active',
+        ]);
+
+        $this->actingInSchool($this->admin, $this->school)
+            ->put("/students/{$student->id}", [
+                'nis' => $student->nis,
+                'full_name' => 'Nama Berubah Saja',
+                'status' => 'active',
+            ])
+            ->assertRedirect(route('students.show', $student));
+
+        $this->assertSame(0, StudentStatusHistory::where('student_id', $student->id)->count());
+    }
+
+    public function test_destroy_soft_deletes_and_audits(): void
+    {
+        $student = Student::factory()->create([
+            'school_id' => $this->school->id,
+            'status' => 'active',
+        ]);
+
+        $this->actingInSchool($this->admin, $this->school)
+            ->delete("/students/{$student->id}")
+            ->assertRedirect(route('students.index'));
+
+        $this->assertSoftDeleted($student);
+        $this->assertSame('inactive', $student->fresh()->status->value);
+
+        $this->assertDatabaseHas('audit_logs', [
+            'school_id' => $this->school->id,
+            'action' => 'student.deactivated',
+            'subject_id' => $student->id,
+        ]);
+
+        $this->assertDatabaseHas('student_status_histories', [
+            'student_id' => $student->id,
+            'to_status' => 'inactive',
+        ]);
+    }
+
+    public function test_soft_deleted_student_disappears_from_the_index(): void
+    {
+        $student = Student::factory()->create([
+            'school_id' => $this->school->id,
+            'full_name' => 'Siswa Dinonaktifkan',
+        ]);
+        $student->delete();
+
+        $response = $this->actingInSchool($this->admin, $this->school)
+            ->get('/students')
+            ->assertOk();
+
+        $response->assertDontSee('Siswa Dinonaktifkan');
+    }
+
+    public function test_a_guardian_from_the_same_school_can_be_linked(): void
+    {
+        $student = Student::factory()->create(['school_id' => $this->school->id]);
+        $guardian = Guardian::factory()->create(['school_id' => $this->school->id]);
+
+        $this->actingInSchool($this->admin, $this->school)
+            ->post("/students/{$student->id}/guardians", [
+                'guardian_id' => $guardian->id,
+                'relationship' => 'mother',
+            ])
+            ->assertRedirect(route('students.show', $student));
+
+        $this->assertDatabaseHas('student_guardians', [
+            'school_id' => $this->school->id,
+            'student_id' => $student->id,
+            'guardian_id' => $guardian->id,
+            'relationship' => 'mother',
+        ]);
+
+        $this->assertDatabaseHas('audit_logs', [
+            'school_id' => $this->school->id,
+            'action' => 'student.guardian_linked',
+        ]);
+    }
+
+    public function test_a_guardian_can_be_linked_to_multiple_students(): void
+    {
+        $guardian = Guardian::factory()->create(['school_id' => $this->school->id]);
+
+        $first = Student::factory()->create(['school_id' => $this->school->id]);
+        $second = Student::factory()->create(['school_id' => $this->school->id]);
+
+        $this->actingInSchool($this->admin, $this->school)
+            ->post("/students/{$first->id}/guardians", [
+                'guardian_id' => $guardian->id,
+                'relationship' => 'mother',
+            ]);
+
+        $this->actingInSchool($this->admin, $this->school)
+            ->post("/students/{$second->id}/guardians", [
+                'guardian_id' => $guardian->id,
+                'relationship' => 'mother',
+            ]);
+
+        $this->assertSame(2, StudentGuardian::where('guardian_id', $guardian->id)->count());
+    }
+
+    public function test_a_student_can_have_multiple_guardians(): void
+    {
+        $student = Student::factory()->create(['school_id' => $this->school->id]);
+
+        $father = Guardian::factory()->create(['school_id' => $this->school->id]);
+        $mother = Guardian::factory()->create(['school_id' => $this->school->id]);
+
+        foreach ([$father, $mother] as $guardian) {
+            $this->actingInSchool($this->admin, $this->school)
+                ->post("/students/{$student->id}/guardians", [
+                    'guardian_id' => $guardian->id,
+                    'relationship' => 'parent',
+                ])
+                ->assertRedirect(route('students.show', $student));
+        }
+
+        $this->assertSame(2, StudentGuardian::where('student_id', $student->id)->count());
+    }
+
+    public function test_search_and_status_filter_are_server_side(): void
+    {
+        Student::factory()->create([
+            'school_id' => $this->school->id,
+            'full_name' => 'Zulfikar Pencarian',
+            'status' => 'active',
+        ]);
+        Student::factory()->create([
+            'school_id' => $this->school->id,
+            'full_name' => 'ZulfikarKeluar',
+            'status' => 'withdrawn',
+        ]);
+
+        $active = $this->actingInSchool($this->admin, $this->school)
+            ->get('/students?q=Zulfikar&status=active')
+            ->assertOk();
+
+        $active->assertSee('Zulfikar Pencarian');
+        $active->assertDontSee('ZulfikarKeluar');
+
+        // Filter status yang tidak dikenal diabaikan, bukan error.
+        $this->actingInSchool($this->admin, $this->school)
+            ->get('/students?status=tidak-valid')
+            ->assertOk();
     }
 }

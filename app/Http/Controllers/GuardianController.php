@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Students\GuardianService;
 use App\Http\Requests\StoreGuardianRequest;
 use App\Models\Guardian;
 use Illuminate\Http\RedirectResponse;
@@ -10,6 +11,8 @@ use Illuminate\View\View;
 
 class GuardianController extends Controller
 {
+    public function __construct(private readonly GuardianService $guardians) {}
+
     public function index(Request $request): View
     {
         $this->authorize('viewAny', Guardian::class);
@@ -38,9 +41,7 @@ class GuardianController extends Controller
 
     public function store(StoreGuardianRequest $request): RedirectResponse
     {
-        $guardian = new Guardian($request->validated());
-        $guardian->assignToCurrentSchool();
-        $guardian->save();
+        $this->guardians->create($request->validated(), $request->user());
 
         return redirect()->route('guardians.index')
             ->with('status', 'Wali berhasil ditambahkan.');
@@ -57,7 +58,7 @@ class GuardianController extends Controller
     {
         $this->authorize('update', $guardian);
 
-        $guardian->update($request->validated());
+        $this->guardians->update($guardian, $request->validated(), $request->user());
 
         return redirect()->route('guardians.index')
             ->with('status', 'Wali berhasil diperbarui.');

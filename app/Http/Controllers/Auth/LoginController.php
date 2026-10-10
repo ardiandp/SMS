@@ -50,9 +50,20 @@ class LoginController extends Controller
 
         RateLimiter::clear($throttleKey);
 
+        $user = $request->user();
+
+        // Suspended/deactivated accounts must not authenticate. The message is
+        // identical to a credential failure so it does not confirm the account.
+        if (! $user->isActive()) {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'email' => 'Email atau password salah.',
+            ]);
+        }
+
         $request->session()->regenerate();
 
-        $user = $request->user();
         $user->forceFill(['last_login_at' => now()])->saveQuietly();
 
         $schools = $user->accessibleSchools()->orderBy('name')->get();

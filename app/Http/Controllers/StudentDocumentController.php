@@ -11,9 +11,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class StudentDocumentController extends Controller
 {
-    public function __construct(private readonly DocumentService $documents)
-    {
-    }
+    public function __construct(private readonly DocumentService $documents) {}
 
     /**
      * Upload a private document for a student.

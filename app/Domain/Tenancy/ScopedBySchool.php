@@ -2,13 +2,15 @@
 
 namespace App\Domain\Tenancy;
 
+use App\Models\School;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Apply to models that own a school_id column. Provides tenant-scoped reads
  * (SchoolScope) and a helper to bind the owning school on create.
  *
- * @mixin \Illuminate\Database\Eloquent\Model
+ * @mixin Model
  */
 trait ScopedBySchool
 {
@@ -19,7 +21,7 @@ trait ScopedBySchool
 
     public function school(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\School::class);
+        return $this->belongsTo(School::class);
     }
 
     /**

@@ -1,13 +1,23 @@
 <?php
 
+use App\Http\Controllers\AcademicYearController;
+use App\Http\Controllers\AttendanceExcuseController;
+use App\Http\Controllers\AttendanceRecordController;
+use App\Http\Controllers\AttendanceReportController;
+use App\Http\Controllers\AttendanceSessionController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\ClassroomController;
+use App\Http\Controllers\ClassScheduleController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\GuardianController;
+use App\Http\Controllers\ReferenceDataController;
 use App\Http\Controllers\SchoolSwitchController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentDocumentController;
 use App\Http\Controllers\StudentImportController;
+use App\Http\Controllers\StudyGroupController;
+use App\Http\Controllers\TeachingAssignmentController;
 use App\Http\Middleware\ResolveSchoolContext;
 use Illuminate\Support\Facades\Route;
 
@@ -51,5 +61,74 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('guardians', GuardianController::class)->only(['index', 'create', 'store', 'edit', 'update']);
         Route::resource('employees', EmployeeController::class);
+
+        // Struktur akademik (PRD-02).
+        Route::resource('classrooms', ClassroomController::class)->except(['show']);
+
+        Route::get('academics/grade-levels', [ReferenceDataController::class, 'gradeLevels'])
+            ->name('academics.grade-levels.index');
+        Route::post('academics/grade-levels', [ReferenceDataController::class, 'storeGradeLevel'])
+            ->name('academics.grade-levels.store');
+        Route::put('academics/grade-levels/{gradeLevel}', [ReferenceDataController::class, 'updateGradeLevel'])
+            ->name('academics.grade-levels.update');
+
+        Route::get('academics/subjects', [ReferenceDataController::class, 'subjects'])
+            ->name('academics.subjects.index');
+        Route::post('academics/subjects', [ReferenceDataController::class, 'storeSubject'])
+            ->name('academics.subjects.store');
+        Route::put('academics/subjects/{subject}', [ReferenceDataController::class, 'updateSubject'])
+            ->name('academics.subjects.update');
+
+        Route::get('academic-years', [AcademicYearController::class, 'index'])->name('academic-years.index');
+        Route::get('academic-years/create', [AcademicYearController::class, 'create'])->name('academic-years.create');
+        Route::post('academic-years', [AcademicYearController::class, 'store'])->name('academic-years.store');
+        Route::get('academic-years/{academicYear}', [AcademicYearController::class, 'show'])->name('academic-years.show');
+        Route::get('academic-years/{academicYear}/edit', [AcademicYearController::class, 'edit'])->name('academic-years.edit');
+        Route::put('academic-years/{academicYear}', [AcademicYearController::class, 'update'])->name('academic-years.update');
+        Route::post('academic-years/{academicYear}/activate', [AcademicYearController::class, 'activate'])->name('academic-years.activate');
+        Route::post('academic-years/{academicYear}/deactivate', [AcademicYearController::class, 'deactivate'])->name('academic-years.deactivate');
+        Route::post('academic-years/{academicYear}/semesters', [AcademicYearController::class, 'storeSemester'])->name('academic-years.semesters.store');
+
+        Route::get('study-groups', [StudyGroupController::class, 'index'])->name('study-groups.index');
+        Route::get('study-groups/create', [StudyGroupController::class, 'create'])->name('study-groups.create');
+        Route::post('study-groups', [StudyGroupController::class, 'store'])->name('study-groups.store');
+        Route::get('study-groups/{studyGroup}', [StudyGroupController::class, 'show'])->name('study-groups.show');
+        Route::get('study-groups/{studyGroup}/edit', [StudyGroupController::class, 'edit'])->name('study-groups.edit');
+        Route::put('study-groups/{studyGroup}', [StudyGroupController::class, 'update'])->name('study-groups.update');
+        Route::post('study-groups/{studyGroup}/students', [StudyGroupController::class, 'addStudent'])->name('study-groups.students.store');
+        Route::delete('study-groups/{studyGroup}/students/{student}', [StudyGroupController::class, 'removeStudent'])->name('study-groups.students.destroy');
+
+        Route::get('study-groups/{studyGroup}/schedules', [ClassScheduleController::class, 'index'])->name('study-groups.schedules.index');
+        Route::post('study-groups/{studyGroup}/schedules', [ClassScheduleController::class, 'store'])->name('study-groups.schedules.store');
+        Route::put('schedules/{classSchedule}', [ClassScheduleController::class, 'update'])->name('schedules.update');
+        Route::delete('schedules/{classSchedule}', [ClassScheduleController::class, 'destroy'])->name('schedules.destroy');
+
+        Route::get('teaching-assignments', [TeachingAssignmentController::class, 'index'])->name('teaching-assignments.index');
+        Route::post('teaching-assignments', [TeachingAssignmentController::class, 'store'])->name('teaching-assignments.store');
+        Route::put('teaching-assignments/{teachingAssignment}', [TeachingAssignmentController::class, 'update'])->name('teaching-assignments.update');
+        Route::delete('teaching-assignments/{teachingAssignment}', [TeachingAssignmentController::class, 'destroy'])->name('teaching-assignments.destroy');
+
+        // Absensi (PRD-03).
+        Route::get('attendance/sessions', [AttendanceSessionController::class, 'index'])->name('attendance.sessions.index');
+        Route::post('attendance/sessions', [AttendanceSessionController::class, 'store'])->name('attendance.sessions.store');
+        Route::get('attendance/sessions/roster', [AttendanceSessionController::class, 'roster'])->name('attendance.sessions.roster');
+        Route::get('attendance/sessions/{attendanceSession}', [AttendanceSessionController::class, 'show'])->name('attendance.sessions.show');
+        Route::post('attendance/sessions/{attendanceSession}/mark', [AttendanceSessionController::class, 'mark'])->name('attendance.sessions.mark');
+        Route::post('attendance/sessions/{attendanceSession}/mark-all', [AttendanceSessionController::class, 'markAll'])->name('attendance.sessions.mark-all');
+        Route::post('attendance/sessions/{attendanceSession}/finalize', [AttendanceSessionController::class, 'finalize'])->name('attendance.sessions.finalize');
+        Route::post('attendance/sessions/{attendanceSession}/reopen', [AttendanceSessionController::class, 'reopen'])->name('attendance.sessions.reopen');
+        Route::post('attendance/sessions/{attendanceSession}/students', [AttendanceRecordController::class, 'attach'])->name('attendance.sessions.students.store');
+
+        Route::put('attendance/records/{attendanceRecord}/correct', [AttendanceRecordController::class, 'correct'])->name('attendance.records.correct');
+        Route::get('attendance/records/student/{student}', [AttendanceRecordController::class, 'studentSummary'])->name('attendance.records.student');
+        Route::get('attendance/records/group/{studyGroup}', [AttendanceRecordController::class, 'studyGroupSummary'])->name('attendance.records.group');
+
+        Route::get('attendance/excuses', [AttendanceExcuseController::class, 'index'])->name('attendance.excuses.index');
+        Route::post('attendance/records/{attendanceRecord}/excuse', [AttendanceExcuseController::class, 'store'])->name('attendance.excuses.store');
+        Route::post('attendance/excuses/{attendanceExcuse}/review', [AttendanceExcuseController::class, 'review'])->name('attendance.excuses.review');
+        Route::get('attendance/excuses/{attendanceExcuse}/download', [AttendanceExcuseController::class, 'download'])->name('attendance.excuses.download');
+
+        Route::get('attendance/reports', [AttendanceReportController::class, 'index'])->name('attendance.reports.index');
+        Route::get('attendance/reports/export', [AttendanceReportController::class, 'export'])->name('attendance.reports.export');
     });
 });

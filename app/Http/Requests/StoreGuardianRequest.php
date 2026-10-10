@@ -2,14 +2,23 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Guardian;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreGuardianRequest extends FormRequest
 {
+    /**
+     * The same request serves both endpoints, so the ability must follow the route
+     * instead of always checking `create`.
+     */
     public function authorize(): bool
     {
-        return $this->user()?->can('create', \App\Models\Guardian::class) ?? false;
+        $guardian = $this->route('guardian');
+
+        return $guardian instanceof Guardian
+            ? ($this->user()?->can('update', $guardian) ?? false)
+            : ($this->user()?->can('create', Guardian::class) ?? false);
     }
 
     /**

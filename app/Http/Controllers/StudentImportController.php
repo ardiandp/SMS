@@ -10,9 +10,7 @@ use Illuminate\View\View;
 
 class StudentImportController extends Controller
 {
-    public function __construct(private readonly StudentImportService $importer)
-    {
-    }
+    public function __construct(private readonly StudentImportService $importer) {}
 
     public function create(Request $request): View
     {

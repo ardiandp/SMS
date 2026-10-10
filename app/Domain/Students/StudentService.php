@@ -17,8 +17,7 @@ class StudentService
     public function __construct(
         private readonly AuditLogger $audit,
         private readonly CurrentSchool $currentSchool,
-    ) {
-    }
+    ) {}
 
     /**
      * Create a student bound to the current tenant, with initial status history.
@@ -96,6 +95,36 @@ class StudentService
                     'student_id' => $student->getKey(),
                     'from' => $previousStatus,
                     'to' => $status->value,
+                ],
+            );
+
+            return $student;
+        });
+    }
+
+    /**
+     * Deactivate (soft delete) a student and keep the history trail consistent.
+     */
+    public function deactivate(Student $student, User $actor): Student
+    {
+        return DB::transaction(function () use ($student, $actor): Student {
+            $previous = $student->status->value;
+
+            $student->status = StudentStatus::Inactive;
+            $student->save();
+            $student->delete();
+
+            $this->recordStatus($student, $previous, StudentStatus::Inactive->value, $actor, 'Siswa dinonaktifkan.');
+
+            $this->audit->record(
+                action: 'student.deactivated',
+                school: $this->currentSchool->school(),
+                actor: $actor,
+                subject: $student,
+                metadata: [
+                    'student_id' => $student->getKey(),
+                    'from' => $previous,
+                    'to' => StudentStatus::Inactive->value,
                 ],
             );
 

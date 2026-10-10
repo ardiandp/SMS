@@ -17,6 +17,16 @@
                         <a href="{{ route('students.index') }}" class="text-gray-600 hover:text-indigo-600">Siswa</a>
                         <a href="{{ route('guardians.index') }}" class="text-gray-600 hover:text-indigo-600">Wali</a>
                         <a href="{{ route('employees.index') }}" class="text-gray-600 hover:text-indigo-600">Pegawai</a>
+                        @can('view.academics')
+                            <a href="{{ route('academic-years.index') }}" class="text-gray-600 hover:text-indigo-600">Tahun Ajaran</a>
+                            <a href="{{ route('study-groups.index') }}" class="text-gray-600 hover:text-indigo-600">Rombel</a>
+                            <a href="{{ route('academics.grade-levels.index') }}" class="text-gray-600 hover:text-indigo-600">Kelas</a>
+                            <a href="{{ route('academics.subjects.index') }}" class="text-gray-600 hover:text-indigo-600">Mapel</a>
+                            <a href="{{ route('classrooms.index') }}" class="text-gray-600 hover:text-indigo-600">Ruang</a>
+                        @endcan
+                        @can('view.attendance')
+                            <a href="{{ route('attendance.sessions.index') }}" class="text-gray-600 hover:text-indigo-600">Absensi</a>
+                        @endcan
                         <a href="{{ route('schools.select') }}" class="text-gray-600 hover:text-indigo-600">Ganti Sekolah</a>
                     </div>
                 @endif

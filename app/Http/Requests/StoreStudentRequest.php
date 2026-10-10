@@ -3,15 +3,26 @@
 namespace App\Http\Requests;
 
 use App\Domain\Tenancy\CurrentSchool;
+use App\Enums\Gender;
+use App\Enums\StudentStatus;
+use App\Models\Student;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class StoreStudentRequest extends FormRequest
 {
+    /**
+     * The same request serves both endpoints, so the ability must follow the route
+     * instead of always checking `create`.
+     */
     public function authorize(): bool
     {
-        return $this->user()?->can('create', \App\Models\Student::class) ?? false;
+        $student = $this->route('student');
+
+        return $student instanceof Student
+            ? ($this->user()?->can('update', $student) ?? false)
+            : ($this->user()?->can('create', Student::class) ?? false);
     }
 
     /**
@@ -34,8 +45,8 @@ class StoreStudentRequest extends FormRequest
             'nisn' => ['nullable', 'string', 'max:50'],
             'full_name' => ['required', 'string', 'max:191'],
             'birth_date' => ['nullable', 'date', 'before_or_equal:today'],
-            'gender' => ['nullable', Rule::enum(\App\Enums\Gender::class)],
-            'status' => ['required', Rule::enum(\App\Enums\StudentStatus::class)],
+            'gender' => ['nullable', Rule::enum(Gender::class)],
+            'status' => ['required', Rule::enum(StudentStatus::class)],
         ];
     }
 }

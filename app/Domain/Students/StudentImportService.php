@@ -8,6 +8,7 @@ use App\Enums\Gender;
 use App\Enums\StudentStatus;
 use App\Models\Student;
 use App\Models\User;
+use DateTimeInterface;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -23,8 +24,7 @@ class StudentImportService
     public function __construct(
         private readonly AuditLogger $audit,
         private readonly CurrentSchool $currentSchool,
-    ) {
-    }
+    ) {}
 
     /**
      * Parse and validate every row without writing anything.
@@ -64,7 +64,9 @@ class StudentImportService
             if (($data['nis'] ?? '') === '') {
                 $errors[] = 'NIS wajib diisi.';
             } else {
-                if (in_array($data['nis'], $existingNis, true) || in_array($data['nis'], $seenNis, true)) {
+                // $seenNis is keyed by NIS, so a plain isset check detects
+                // duplicates within the same file.
+                if (in_array($data['nis'], $existingNis, true) || isset($seenNis[$data['nis']])) {
                     $errors[] = 'NIS "'.$data['nis'].'" sudah terdaftar.';
                 }
                 $seenNis[$data['nis']] = true;
@@ -114,11 +116,12 @@ class StudentImportService
             foreach ($rows as $row) {
                 $student = new Student([
                     'nis' => $row['data']['nis'],
-                    'nisn' => $row['data']['nisn'] ?? null ?: null,
+                    'nisn' => $this->nullable($row['data'], 'nisn'),
                     'full_name' => $row['data']['full_name'],
-                    'birth_date' => $row['data']['birth_date'] ?? null ?: null,
-                    'gender' => $row['data']['gender'] ?? null ?: null,
-                    'status' => $row['data']['status'] !== '' ? $row['data']['status'] : StudentStatus::Active->value,
+                    'birth_date' => $this->nullable($row['data'], 'birth_date'),
+                    'gender' => $this->nullable($row['data'], 'gender'),
+                    // The `status` column is optional, so the key may be absent.
+                    'status' => $this->nullable($row['data'], 'status') ?? StudentStatus::Active->value,
                 ]);
                 $student->assignToCurrentSchool();
                 $student->save();
@@ -137,6 +140,20 @@ class StudentImportService
     }
 
     /**
+     * Read an optional column as a trimmed string, or null when the column is
+     * absent from the file or the cell is empty. Empty strings must not be written
+     * into nullable date/enum columns.
+     *
+     * @param  array<string, string>  $data
+     */
+    private function nullable(array $data, string $key): ?string
+    {
+        $value = trim((string) ($data[$key] ?? ''));
+
+        return $value === '' ? null : $value;
+    }
+
+    /**
      * @return list<list<string>>
      */
     private function parse(UploadedFile $file): array
@@ -150,13 +167,28 @@ class StudentImportService
         $rows = [];
         foreach ($reader->getSheetIterator() as $sheet) {
             foreach ($sheet->getRowIterator() as $row) {
-                $rows[] = array_map('strval', $row->getCells());
+                $rows[] = array_map($this->cellValue(...), $row->toArray());
             }
+
             break; // hanya sheet pertama
         }
 
         $reader->close();
 
         return $rows;
+    }
+
+    /**
+     * OpenSpout 5 returns raw cell values; every supported type is flattened to a
+     * trimmed string so validation only deals with scalars.
+     */
+    private function cellValue(mixed $value): string
+    {
+        return match (true) {
+            $value === null => '',
+            is_bool($value) => $value ? '1' : '0',
+            $value instanceof DateTimeInterface => $value->format('Y-m-d'),
+            default => trim((string) $value),
+        };
     }
 }

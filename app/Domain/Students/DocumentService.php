@@ -18,8 +18,7 @@ class DocumentService
     public function __construct(
         private readonly AuditLogger $audit,
         private readonly CurrentSchool $currentSchool,
-    ) {
-    }
+    ) {}
 
     /**
      * Store a student document on the private disk (never publicly served).

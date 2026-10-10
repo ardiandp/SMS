@@ -8,9 +8,7 @@ use App\Models\User;
 
 class GuardianPolicy
 {
-    public function __construct(private readonly CurrentSchool $currentSchool)
-    {
-    }
+    public function __construct(private readonly CurrentSchool $currentSchool) {}
 
     public function viewAny(User $user): bool
     {

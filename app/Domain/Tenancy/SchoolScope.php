@@ -2,7 +2,6 @@
 
 namespace App\Domain\Tenancy;
 
-use App\Domain\Tenancy\CurrentSchool;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;

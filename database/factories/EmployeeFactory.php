@@ -22,7 +22,7 @@ class EmployeeFactory extends Factory
             'school_id' => School::factory(),
             'employee_number' => 'G'.fake()->unique()->numerify('#####'),
             'full_name' => fake()->name(),
-            'employment_status' => fake()->randomElement(['permanent', 'contract', 'probation']),
+            'employment_status' => fake()->randomElement(['permanent', 'contract', 'probation', 'former']),
             'joined_on' => fake()->dateTimeBetween('-10 years', '-1 year')->format('Y-m-d'),
             'left_on' => null,
         ];
