@@ -50,6 +50,24 @@ class RoleSeeder extends Seeder
     ];
 
     /**
+     * Assessment and report card permissions (PRD-04).
+     *
+     * Mirrors the attendance split: entering a draft score is a routine act,
+     * finalizing is administrative, and correcting an already-finalized number
+     * or publishing a report card is the strongest act of all — each gets its
+     * own permission so the school can grant them independently.
+     */
+    private const ASSESSMENT_PERMISSIONS = [
+        'view.grades',
+        'manage.assessments',
+        'manage.grading-policies',
+        'finalize.grades',
+        'correct.grades',
+        'publish.report-cards',
+        'export.report-cards',
+    ];
+
+    /**
      * Baseline roles/permissions for the platform foundation (PRD-00).
      * Roles are global; per-school assignment happens through the teams feature.
      */
@@ -62,11 +80,13 @@ class RoleSeeder extends Seeder
                 self::ADMIN_PERMISSIONS,
                 self::ACADEMIC_PERMISSIONS,
                 self::ATTENDANCE_PERMISSIONS,
+                self::ASSESSMENT_PERMISSIONS,
             ),
             'school-admin' => array_merge(
                 self::ADMIN_PERMISSIONS,
                 self::ACADEMIC_PERMISSIONS,
                 self::ATTENDANCE_PERMISSIONS,
+                self::ASSESSMENT_PERMISSIONS,
             ),
             'staff' => [
                 'view.dashboard',
@@ -75,6 +95,7 @@ class RoleSeeder extends Seeder
                 'view.academics',
                 'manage.documents',
                 'view.attendance',
+                'view.grades',
             ],
             'teacher' => [
                 'view.dashboard',
@@ -83,6 +104,10 @@ class RoleSeeder extends Seeder
                 // Guru dapat mengisi absensi, tetapi hanya untuk rombel yang
                 // diampu dan hanya correcting sesi yang belum selesai.
                 'view.attendance',
+                // Guru mengelola asesmen dan menilai untuk assignment yang
+                // diampu; finalisasi/koreksi nilai tetap wewenang admin.
+                'view.grades',
+                'manage.assessments',
             ],
         ];
 
