@@ -27,6 +27,9 @@
                         @can('view.attendance')
                             <a href="{{ route('attendance.sessions.index') }}" class="text-gray-600 hover:text-indigo-600">Absensi</a>
                         @endcan
+                        @can('viewAny', App\Models\Assessment::class)
+                            <a href="{{ route('assessments.index') }}" class="text-gray-600 hover:text-indigo-600">Penilaian</a>
+                        @endcan
                         <a href="{{ route('schools.select') }}" class="text-gray-600 hover:text-indigo-600">Ganti Sekolah</a>
                     </div>
                 @endif

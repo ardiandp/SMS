@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AcademicYearController;
+use App\Http\Controllers\AssessmentCategoryController;
+use App\Http\Controllers\AssessmentController;
 use App\Http\Controllers\AttendanceExcuseController;
 use App\Http\Controllers\AttendanceRecordController;
 use App\Http\Controllers\AttendanceReportController;
@@ -130,5 +132,19 @@ Route::middleware('auth')->group(function () {
 
         Route::get('attendance/reports', [AttendanceReportController::class, 'index'])->name('attendance.reports.index');
         Route::get('attendance/reports/export', [AttendanceReportController::class, 'export'])->name('attendance.reports.export');
+
+        // Penilaian (PRD-04).
+        Route::get('assessments', [AssessmentController::class, 'index'])->name('assessments.index');
+        Route::post('assessments', [AssessmentController::class, 'store'])->name('assessments.store');
+        Route::get('assessments/{assessment}', [AssessmentController::class, 'show'])->name('assessments.show');
+        Route::put('assessments/{assessment}', [AssessmentController::class, 'update'])->name('assessments.update');
+        Route::delete('assessments/{assessment}', [AssessmentController::class, 'destroy'])->name('assessments.destroy');
+        Route::post('assessments/{assessment}/scores', [AssessmentController::class, 'saveScores'])->name('assessments.scores.save');
+        Route::post('assessments/{assessment}/publish', [AssessmentController::class, 'publish'])->name('assessments.publish');
+        Route::put('assessment-scores/{assessmentScore}/correct', [AssessmentController::class, 'correct'])->name('assessment-scores.correct');
+
+        Route::get('assessment-categories', [AssessmentCategoryController::class, 'index'])->name('assessments.categories.index');
+        Route::post('assessment-categories', [AssessmentCategoryController::class, 'store'])->name('assessments.categories.store');
+        Route::put('assessment-categories/{assessmentCategory}', [AssessmentCategoryController::class, 'update'])->name('assessments.categories.update');
     });
 });

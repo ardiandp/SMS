@@ -2,6 +2,7 @@
 
 namespace App\Domain\Attendance;
 
+use App\Enums\AssignmentStatus;
 use App\Models\EmployeeUserLink;
 use App\Models\StudyGroup;
 use App\Models\TeachingAssignment;
@@ -60,5 +61,24 @@ class TeacherAssignmentResolver
             ->pluck('employee_id')
             ->map(fn ($id): int => (int) $id)
             ->all();
+    }
+
+    /**
+     * Whether the user is the teacher of one specific (active) assignment.
+     *
+     * PRD-04 reuses this so a teacher can only manage assessments for subjects
+     * they actually teach, exactly like attendance sessions.
+     */
+    public function teachesAssignment(User $user, TeachingAssignment $assignment): bool
+    {
+        if ($assignment->status !== AssignmentStatus::Active) {
+            return false;
+        }
+
+        return in_array(
+            (int) $assignment->employee_id,
+            $this->employeeIds($user, (int) $assignment->school_id),
+            true,
+        );
     }
 }
