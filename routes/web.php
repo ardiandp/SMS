@@ -16,6 +16,7 @@ use App\Http\Controllers\FinalGradeController;
 use App\Http\Controllers\GradingPolicyController;
 use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\ReferenceDataController;
+use App\Http\Controllers\ReportCardController;
 use App\Http\Controllers\SchoolSwitchController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentDocumentController;
@@ -158,5 +159,10 @@ Route::middleware('auth')->group(function () {
         Route::post('teaching-assignments/{teachingAssignment}/final-grades/calculate', [FinalGradeController::class, 'calculate'])->name('final-grades.calculate');
         Route::post('final-grades/{finalGrade}/finalize', [FinalGradeController::class, 'finalize'])->name('final-grades.finalize');
         Route::put('final-grades/{finalGrade}/correct', [FinalGradeController::class, 'correct'])->name('final-grades.correct');
+
+        // Rapor (PRD-04).
+        Route::get('report-cards', [ReportCardController::class, 'index'])->name('report-cards.index');
+        Route::post('report-cards/publish', [ReportCardController::class, 'publish'])->name('report-cards.publish');
+        Route::get('report-cards/{reportCard}', [ReportCardController::class, 'show'])->name('report-cards.show');
     });
 });
