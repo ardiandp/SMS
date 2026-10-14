@@ -15,6 +15,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FinalGradeController;
 use App\Http\Controllers\GradingPolicyController;
 use App\Http\Controllers\GuardianController;
+use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\ReferenceDataController;
 use App\Http\Controllers\ReportCardController;
 use App\Http\Controllers\SchoolSwitchController;
@@ -165,5 +166,10 @@ Route::middleware('auth')->group(function () {
         Route::post('report-cards/publish', [ReportCardController::class, 'publish'])->name('report-cards.publish');
         Route::get('report-cards/{reportCard}/print', [ReportCardController::class, 'print'])->name('report-cards.print');
         Route::get('report-cards/{reportCard}', [ReportCardController::class, 'show'])->name('report-cards.show');
+
+        // Kenaikan kelas & kelulusan (PRD-04).
+        Route::get('promotions', [PromotionController::class, 'index'])->name('promotions.index');
+        Route::post('promotions/decisions', [PromotionController::class, 'decide'])->name('promotions.decide');
+        Route::post('promotions/graduations', [PromotionController::class, 'issue'])->name('promotions.graduations.issue');
     });
 });

@@ -3,16 +3,19 @@
 namespace App\Models;
 
 use App\Domain\Tenancy\ScopedBySchool;
+use App\Enums\GraduationStatus;
 use Database\Factories\GraduationRecordFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * A per-student graduation record for an academic year.
+ * A per-student graduation record for an academic year (PRD-04).
  *
- * Created per MIGRATION_PLAN, but deliberately NOT wired to any workflow: the
- * graduation rule is undecided (PRD-04). Nothing writes here yet.
+ * The graduation rule is decided by the school; the application only records
+ * the declaration through PromotionService::issueGraduation (permission
+ * `issue.graduations`), with an audit trail. One row per student/year
+ * enforced by a unique index.
  *
  * @property string $status
  */
@@ -37,6 +40,7 @@ class GraduationRecord extends Model
     protected function casts(): array
     {
         return [
+            'status' => GraduationStatus::class,
             'issued_at' => 'datetime',
         ];
     }

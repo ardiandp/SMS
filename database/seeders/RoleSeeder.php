@@ -68,6 +68,18 @@ class RoleSeeder extends Seeder
     ];
 
     /**
+     * Promotion and graduation permissions (PRD-04).
+     *
+     * Recording who moves up a grade, stays back, or graduates is an
+     * administrative act that changes a student's academic path; issuing the
+     * graduation document is stronger still. Each gets its own permission.
+     */
+    private const PROMOTION_PERMISSIONS = [
+        'manage.promotions',
+        'issue.graduations',
+    ];
+
+    /**
      * Baseline roles/permissions for the platform foundation (PRD-00).
      * Roles are global; per-school assignment happens through the teams feature.
      */
@@ -81,12 +93,14 @@ class RoleSeeder extends Seeder
                 self::ACADEMIC_PERMISSIONS,
                 self::ATTENDANCE_PERMISSIONS,
                 self::ASSESSMENT_PERMISSIONS,
+                self::PROMOTION_PERMISSIONS,
             ),
             'school-admin' => array_merge(
                 self::ADMIN_PERMISSIONS,
                 self::ACADEMIC_PERMISSIONS,
                 self::ATTENDANCE_PERMISSIONS,
                 self::ASSESSMENT_PERMISSIONS,
+                self::PROMOTION_PERMISSIONS,
             ),
             'staff' => [
                 'view.dashboard',

@@ -36,6 +36,9 @@
                         @can('viewAny', App\Models\ReportCard::class)
                             <a href="{{ route('report-cards.index') }}" class="text-gray-600 hover:text-indigo-600">Rapor</a>
                         @endcan
+                        @can('viewAny', App\Models\PromotionDecision::class)
+                            <a href="{{ route('promotions.index') }}" class="text-gray-600 hover:text-indigo-600">Kenaikan &amp; Kelulusan</a>
+                        @endcan
                         <a href="{{ route('schools.select') }}" class="text-gray-600 hover:text-indigo-600">Ganti Sekolah</a>
                     </div>
                 @endif

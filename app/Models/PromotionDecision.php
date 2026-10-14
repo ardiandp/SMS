@@ -3,17 +3,20 @@
 namespace App\Models;
 
 use App\Domain\Tenancy\ScopedBySchool;
+use App\Enums\PromotionOutcome;
 use Database\Factories\PromotionDecisionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * A per-student promotion decision for an academic year.
+ * A per-student promotion decision for an academic year (PRD-04).
  *
- * Created per MIGRATION_PLAN, but deliberately NOT wired to any workflow: the
- * school has not decided the promotion rule yet (PRD-04). Nothing in the
- * application writes to this table until that decision is recorded.
+ * The application never computes the decision from grades: the school records
+ * its own approved outcome (naik kelas / tinggal kelas / lulus) through
+ * PromotionService, which audits every write. One row per student/year; a
+ * re-deliberation updates that row and leaves the previous value in the audit
+ * log.
  *
  * @property string $decision
  */
@@ -40,6 +43,7 @@ class PromotionDecision extends Model
     protected function casts(): array
     {
         return [
+            'decision' => PromotionOutcome::class,
             'decided_at' => 'datetime',
         ];
     }
