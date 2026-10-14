@@ -6,7 +6,12 @@
     <div class="flex items-center justify-between mb-4 print:hidden">
         <h1 class="text-xl font-semibold">Rapor</h1>
         <div class="flex gap-2 text-sm">
-            <button onclick="window.print()" class="rounded border border-gray-400 px-3 py-1.5 hover:bg-gray-50">Cetak</button>
+            @if (! empty($printMode))
+                <button onclick="window.print()" class="rounded border border-gray-400 px-3 py-1.5 hover:bg-gray-50">Print</button>
+            @elseif (Auth::user()?->can('export', $card))
+                <a href="{{ route('report-cards.print', $card) }}" target="_blank" rel="noopener"
+                   class="rounded border border-gray-400 px-3 py-1.5 hover:bg-gray-50">Cetak / Simpan PDF</a>
+            @endif
             <a href="{{ route('report-cards.index', [
                 'student_id' => $card->student_id,
                 'academic_year_id' => $card->academic_year_id,

@@ -100,4 +100,37 @@ class ReportCardController extends Controller
             'previous' => $previous,
         ]);
     }
+
+    /**
+     * Print/download copy of one published revision.
+     *
+     * Served only to holders of `export.report-cards`: taking a report card
+     * off the system is a stronger act than reading it on screen.
+     */
+    public function print(Request $request, ReportCard $reportCard): View
+    {
+        $this->authorize('export', $reportCard);
+
+        $reportCard->load([
+            'items.subject',
+            'items.teacher',
+            'student',
+            'academicYear',
+            'semester',
+        ]);
+
+        $previous = ReportCard::query()
+            ->where('student_id', $reportCard->student_id)
+            ->where('academic_year_id', $reportCard->academic_year_id)
+            ->where('semester_id', $reportCard->semester_id)
+            ->where('revision_no', '<', $reportCard->revision_no)
+            ->orderByDesc('revision_no')
+            ->first();
+
+        return view('assessments.report-cards.show', [
+            'card' => $reportCard,
+            'previous' => $previous,
+            'printMode' => true,
+        ]);
+    }
 }

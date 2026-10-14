@@ -169,4 +169,20 @@ class ReportCardTest extends TestCase
             ->get("/report-cards/{$foreign->id}")
             ->assertNotFound();
     }
+
+    public function test_printing_a_report_card_requires_the_export_permission(): void
+    {
+        $ctx = $this->makePublishableContext();
+        $card = $this->publish($ctx);
+
+        // Guru memiliki view.grades tetapi bukan export.report-cards:
+        // membaca di layar boleh, membawa keluar dokumen tidak.
+        $this->actingInSchool($ctx['user'], $this->school)
+            ->get("/report-cards/{$card->id}/print")
+            ->assertForbidden();
+
+        $this->actingInSchool($this->admin, $this->school)
+            ->get("/report-cards/{$card->id}/print")
+            ->assertOk();
+    }
 }

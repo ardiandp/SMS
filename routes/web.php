@@ -163,6 +163,7 @@ Route::middleware('auth')->group(function () {
         // Rapor (PRD-04).
         Route::get('report-cards', [ReportCardController::class, 'index'])->name('report-cards.index');
         Route::post('report-cards/publish', [ReportCardController::class, 'publish'])->name('report-cards.publish');
+        Route::get('report-cards/{reportCard}/print', [ReportCardController::class, 'print'])->name('report-cards.print');
         Route::get('report-cards/{reportCard}', [ReportCardController::class, 'show'])->name('report-cards.show');
     });
 });
