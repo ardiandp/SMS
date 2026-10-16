@@ -63,6 +63,24 @@ vendor/bin/pint --format agent  # format kode PHP sebelum commit
 
 Test menggunakan database MySQL `sms_test` (didefinisikan di `phpunit.xml`); `RefreshDatabase` akan menjalankan migrasi ulang pada setiap test, jadi jangan menaruh data penting di sana.
 
+### Data demo (development/testing)
+
+`DemoSeeder` mengisi **seluruh tabel domain** dengan data dummy Indonesia yang
+realistis dan konsisten (2 sekolah, 70 siswa lintas angkatan, wali, absensi,
+penilaian s.d. SKL — semua lewat service domain yang sama dengan produksi
+sehingga audit trail ikut terbentuk). Tidak pernah jalan otomatis; panggil
+eksplisit:
+
+```bash
+php artisan migrate:fresh --seed --seeder=DemoSeeder   # DB kosong → isi demo
+php artisan db:seed --class=DemoSeeder                 # tambah ke DB yang ada
+```
+
+Akun demo (password semua: `password`): `admin@nusantara.test`
+(kepala sekolah), 8 guru (`siti.rahmawati@nusantara.test` dst),
+`staf@nusantara.test` (TU), `admin@pelita.test` (tenant kedua).
+Dilewati otomatis di environment production.
+
 Spesifikasi proyek ada di `irnis_school_prd/docs/` (PRD, arsitektur, ERD, data dictionary).
 
 ## Contributing
