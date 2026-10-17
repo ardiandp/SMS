@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AcademicEventController;
 use App\Http\Controllers\AcademicYearController;
+use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AssessmentCategoryController;
 use App\Http\Controllers\AssessmentController;
 use App\Http\Controllers\AttendanceExcuseController;
@@ -171,5 +173,17 @@ Route::middleware('auth')->group(function () {
         Route::get('promotions', [PromotionController::class, 'index'])->name('promotions.index');
         Route::post('promotions/decisions', [PromotionController::class, 'decide'])->name('promotions.decide');
         Route::post('promotions/graduations', [PromotionController::class, 'issue'])->name('promotions.graduations.issue');
+
+        // Kalender akademik & pengumuman (PRD-05).
+        Route::get('academic-events', [AcademicEventController::class, 'index'])->name('academic-events.index');
+        Route::post('academic-events', [AcademicEventController::class, 'store'])->name('academic-events.store');
+        Route::put('academic-events/{academicEvent}', [AcademicEventController::class, 'update'])->name('academic-events.update');
+        Route::delete('academic-events/{academicEvent}', [AcademicEventController::class, 'destroy'])->name('academic-events.destroy');
+
+        Route::get('announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+        Route::post('announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
+        Route::put('announcements/{announcement}', [AnnouncementController::class, 'update'])->name('announcements.update');
+        Route::post('announcements/{announcement}/publish', [AnnouncementController::class, 'publish'])->name('announcements.publish');
+        Route::post('announcements/{announcement}/archive', [AnnouncementController::class, 'archive'])->name('announcements.archive');
     });
 });

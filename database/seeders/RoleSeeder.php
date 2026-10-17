@@ -80,6 +80,17 @@ class RoleSeeder extends Seeder
     ];
 
     /**
+     * Dashboard and communication permissions (PRD-05).
+     *
+     * Publishing a school-wide announcement speaks for the school, so it is
+     * separate from reading the dashboard: teachers and staff see
+     * announcements, but only announcement managers can draft/publish them.
+     */
+    private const COMMUNICATION_PERMISSIONS = [
+        'manage.announcements',
+    ];
+
+    /**
      * Baseline roles/permissions for the platform foundation (PRD-00).
      * Roles are global; per-school assignment happens through the teams feature.
      */
@@ -94,6 +105,7 @@ class RoleSeeder extends Seeder
                 self::ATTENDANCE_PERMISSIONS,
                 self::ASSESSMENT_PERMISSIONS,
                 self::PROMOTION_PERMISSIONS,
+                self::COMMUNICATION_PERMISSIONS,
             ),
             'school-admin' => array_merge(
                 self::ADMIN_PERMISSIONS,
@@ -101,6 +113,7 @@ class RoleSeeder extends Seeder
                 self::ATTENDANCE_PERMISSIONS,
                 self::ASSESSMENT_PERMISSIONS,
                 self::PROMOTION_PERMISSIONS,
+                self::COMMUNICATION_PERMISSIONS,
             ),
             'staff' => [
                 'view.dashboard',

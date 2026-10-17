@@ -39,6 +39,8 @@
                         @can('viewAny', App\Models\PromotionDecision::class)
                             <a href="{{ route('promotions.index') }}" class="text-gray-600 hover:text-indigo-600">Kenaikan &amp; Kelulusan</a>
                         @endcan
+                        <a href="{{ route('academic-events.index') }}" class="text-gray-600 hover:text-indigo-600">Kalender</a>
+                        <a href="{{ route('announcements.index') }}" class="text-gray-600 hover:text-indigo-600">Pengumuman</a>
                         <a href="{{ route('schools.select') }}" class="text-gray-600 hover:text-indigo-600">Ganti Sekolah</a>
                     </div>
                 @endif
