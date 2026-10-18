@@ -45,8 +45,8 @@ Format entri:
   `resources/views/notifications/index.blade.php`,
   `tests/Feature/NotificationTest.php` (6 test).
 - **Verifikasi:** `NotificationTest` **6/6 lulus**; `php artisan migrate`
-  (DB dev) sukses; suite penuh dijalankan terpisah.
-- **Commit:** (isi setelah suite hijau + commit)
+  (DB dev) sukses; suite penuh **268/268 lulus** (nol regresi).
+- **Commit:** d0628b7
 
 ### [ID] Fix RoleSeeder gagal saat `php artisan migrate:fresh --seed` — SELESAI
 - **Apa:** `DatabaseSeeder` memakai `WithoutModelEvents`, sehingga event model
