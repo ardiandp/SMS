@@ -30,7 +30,7 @@ Format entri:
 - **File:** `database/seeders/RoleSeeder.php`
 - **Verifikasi:** `php artisan migrate:fresh --seed` sukses (30 permissions,
   4 roles, 73 role↔permission); `php artisan test` **262/262 passed**.
-- **Commit:** (isi saat commit)
+- **Commit:** bb68487
 
 ### [ID] Fix bug manajemen LetterTemplate & SchoolLetter (permission/policy/view) — SELESAI
 - **Apa:** Perbaikan rangkaian bug agar modul surat berfungsi:
@@ -48,6 +48,11 @@ Format entri:
   - `SchoolLetterController::index()` menyiapkan query `templates` untuk view.
   - Import yang hilang di policy/request; perbaikan asersi enum-vs-string
     di `LetterTest` (`->status->value` → `->status`).
+  Revisi terakhir: flush eksplisit cache Spatie → commit `bb68487`.
+- **File:** `CurrentSchool.php`, `SchoolLetterPolicy.php`,
+  `LetterTemplateController.php`, `SchoolLetterController.php`,
+  `StoreLetterTemplateRequest.php`, `StoreSchoolLetterRequest.php`,
+  `LetterTest.php`, `database/seeders/RoleSeeder.php`
 - **File:** `CurrentSchool.php`, `SchoolLetterPolicy.php`,
   `LetterTemplateController.php`, `SchoolLetterController.php`,
   `StoreLetterTemplateRequest.php`, `StoreSchoolLetterRequest.php`,
