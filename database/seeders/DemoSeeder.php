@@ -18,6 +18,7 @@ use App\Enums\AttendanceStatus;
 use App\Enums\ExcuseStatus;
 use App\Enums\GraduationStatus;
 use App\Enums\PlacementStatus;
+use App\Enums\SchoolLetterStatus;
 use App\Enums\PromotionOutcome;
 use App\Enums\StudentStatus;
 use App\Models\AcademicYear;
@@ -34,8 +35,10 @@ use App\Models\GradeLevel;
 use App\Models\GradingPolicy;
 use App\Models\GraduationRecord;
 use App\Models\Guardian;
+use App\Models\LetterTemplate;
 use App\Models\ReportCard;
 use App\Models\School;
+use App\Models\SchoolLetter;
 use App\Models\SchoolUserMembership;
 use App\Models\Semester;
 use App\Models\Student;
@@ -102,6 +105,10 @@ class DemoSeeder extends Seeder
 
         $this->seedMainSchool();
         $this->seedSecondSchool();
+
+        // Surat & template surat untuk kedua sekolah (PRD-05).
+        $this->seedLetters(School::where('slug', 'nusantara-cendekia')->first(), User::where('email', 'admin@nusantara.test')->first());
+        $this->seedLetters(School::where('slug', 'pelita-bangsa')->first(), User::where('email', 'admin@pelita.test')->first());
 
         app(CurrentSchool::class)->clear();
         app(PermissionRegistrar::class)->forgetCachedPermissions();
@@ -1230,6 +1237,64 @@ class DemoSeeder extends Seeder
         $this->command?->info('Sekolah "SMA Pelita Bangsa" selesai diisi.');
     }
 
+    private function seedLetters(School $school, User $admin): void
+    {
+        app(CurrentSchool::class)->resolve($admin, $school->getKey());
+
+        $templates = [
+            [
+                'code' => 'SKL-001',
+                'name' => 'Surat Keterangan Lulus',
+                'body_template' => "Yang bertanda tangan di bawah ini, Kepala Sekolah {{sekolah}}, menerangkan bahwa {{nama}} telah lulus dari {{sekolah}} pada tahun {{tahun}}.<br><br>Demikian surat ini dibuat untuk digunakan sebagaimana mestinya.",
+            ],
+            [
+                'code' => 'SKD-001',
+                'name' => 'Surat Keterangan Domisili',
+                'body_template' => "Yang bertanda tangan di bawah ini, Kepala Sekolah {{sekolah}}, menerangkan bahwa {{nama}} berdomisili di {{alamat}}.<br><br>Demikian surat ini dibuat untuk digunakan sebagaimana mestinya.",
+            ],
+            [
+                'code' => 'SKS-001',
+                'name' => 'Surat Keterangan Sehat',
+                'body_template' => "Yang bertanda tangan di bawah ini, Kepala Sekolah {{sekolah}}, menerangkan bahwa {{nama}} dalam keadaan sehat jasmani dan rohani.<br><br>Demikian surat ini dibuat untuk digunakan sebagaimana mestinya.",
+            ],
+        ];
+
+        foreach ($templates as $templateData) {
+            LetterTemplate::factory()->create(array_merge($templateData, [
+                'school_id' => $school->getKey(),
+                'created_by' => $admin->getKey(),
+            ]));
+        }
+
+        // Surat draf tanpa template
+        SchoolLetter::factory()->count(3)->create([
+            'school_id' => $school->getKey(),
+            'created_by' => $admin->getKey(),
+        ]);
+
+        // Surat terbit dengan template aktif
+        $activeTemplate = LetterTemplate::where('school_id', $school->getKey())
+            ->where('is_active', true)
+            ->first();
+
+        if ($activeTemplate) {
+            SchoolLetter::factory()->count(2)->create([
+                'school_id' => $school->getKey(),
+                'template_id' => $activeTemplate->getKey(),
+                'created_by' => $admin->getKey(),
+            ]);
+
+            // Dua surat terbit
+            SchoolLetter::factory()->count(2)->issued()->create([
+                'school_id' => $school->getKey(),
+                'template_id' => $activeTemplate->getKey(),
+                'created_by' => $admin->getKey(),
+            ]);
+        }
+
+        $this->command?->line(sprintf('  Surat & template untuk "%s" selesai diisi.', $school->name));
+    }
+
     private function reportCounts(): void
     {
         $tables = [
@@ -1242,6 +1307,7 @@ class DemoSeeder extends Seeder
             'assessment_categories', 'assessments', 'assessment_scores', 'grading_policies',
             'final_grades', 'report_cards', 'report_card_items',
             'promotion_decisions', 'graduation_records', 'audit_logs',
+            'letter_templates', 'school_letters',
         ];
 
         $this->command?->newLine();

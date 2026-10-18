@@ -40,7 +40,10 @@
                             <a href="{{ route('promotions.index') }}" class="text-gray-600 hover:text-indigo-600">Kenaikan &amp; Kelulusan</a>
                         @endcan
                         <a href="{{ route('academic-events.index') }}" class="text-gray-600 hover:text-indigo-600">Kalender</a>
+                    </div>
+                    <div class="flex items-center gap-4 text-sm">
                         <a href="{{ route('announcements.index') }}" class="text-gray-600 hover:text-indigo-600">Pengumuman</a>
+                        <a href="{{ route('letter_templates.index') }}" class="text-gray-600 hover:text-indigo-600">Template &amp; Surat</a>
                         <a href="{{ route('schools.select') }}" class="text-gray-600 hover:text-indigo-600">Ganti Sekolah</a>
                     </div>
                 @endif

@@ -17,9 +17,11 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FinalGradeController;
 use App\Http\Controllers\GradingPolicyController;
 use App\Http\Controllers\GuardianController;
+use App\Http\Controllers\LetterTemplateController;
 use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\ReferenceDataController;
 use App\Http\Controllers\ReportCardController;
+use App\Http\Controllers\SchoolLetterController;
 use App\Http\Controllers\SchoolSwitchController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentDocumentController;
@@ -185,5 +187,22 @@ Route::middleware('auth')->group(function () {
         Route::put('announcements/{announcement}', [AnnouncementController::class, 'update'])->name('announcements.update');
         Route::post('announcements/{announcement}/publish', [AnnouncementController::class, 'publish'])->name('announcements.publish');
         Route::post('announcements/{announcement}/archive', [AnnouncementController::class, 'archive'])->name('announcements.archive');
+
+        // Surat & template surat (PRD-05).
+        Route::get('letter-templates', [LetterTemplateController::class, 'index'])->name('letter_templates.index');
+        Route::get('letter-templates/create', [LetterTemplateController::class, 'create'])->name('letter_templates.create');
+        Route::post('letter-templates', [LetterTemplateController::class, 'store'])->name('letter_templates.store');
+        Route::get('letter-templates/{letterTemplate}', [LetterTemplateController::class, 'edit'])->name('letter_templates.edit');
+        Route::put('letter-templates/{letterTemplate}', [LetterTemplateController::class, 'update'])->name('letter_templates.update');
+        Route::delete('letter-templates/{letterTemplate}', [LetterTemplateController::class, 'destroy'])->name('letter_templates.destroy');
+
+        Route::get('school-letters', [SchoolLetterController::class, 'index'])->name('school_letters.index');
+        Route::get('school-letters/create', [SchoolLetterController::class, 'create'])->name('school_letters.create');
+        Route::post('school-letters', [SchoolLetterController::class, 'store'])->name('school_letters.store');
+        Route::get('school-letters/{schoolLetter}', [SchoolLetterController::class, 'show'])->name('school_letters.show');
+        Route::get('school-letters/{schoolLetter}/edit', [SchoolLetterController::class, 'edit'])->name('school_letters.edit');
+        Route::put('school-letters/{schoolLetter}', [SchoolLetterController::class, 'update'])->name('school_letters.update');
+        Route::post('school-letters/{schoolLetter}/issue', [SchoolLetterController::class, 'issue'])->name('school_letters.issue');
+        Route::post('school-letters/{schoolLetter}/cancel', [SchoolLetterController::class, 'cancel'])->name('school_letters.cancel');
     });
 });

@@ -38,6 +38,11 @@ class CurrentSchool
 
         setPermissionsTeamId($this->school->getKey());
 
+        // Clear any cached roles/permissions on the user so they reload
+        // under the new team context. Without this, roles loaded under a
+        // previous (e.g. null) team id stay cached and can() returns false.
+        $user->unsetRelation('roles');
+
         return true;
     }
 

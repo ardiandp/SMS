@@ -88,6 +88,8 @@ class RoleSeeder extends Seeder
      */
     private const COMMUNICATION_PERMISSIONS = [
         'manage.announcements',
+        'manage.templates',
+        'manage.letters',
     ];
 
     /**
@@ -97,6 +99,10 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        if (getenv('ROLESEEDER_DEBUG')) {
+            fwrite(STDERR, "DBG start: dbPermCount=" . Permission::query()->count() . " registrarCount=" . app(PermissionRegistrar::class)->getPermissions()->count() . "\n");
+        }
 
         $roles = [
             'super-admin' => array_merge(
@@ -139,8 +145,20 @@ class RoleSeeder extends Seeder
         ];
 
         foreach ($roles as $roleName => $permissions) {
+            $first = true;
             foreach ($permissions as $permission) {
                 Permission::findOrCreate($permission, 'web');
+
+                if (getenv('ROLESEEDER_DEBUG') && $first) {
+                    $first = false;
+                    try {
+                        Permission::findByName($permission, 'web');
+                        $lookup = 'FOUND';
+                    } catch (\Throwable $e) {
+                        $lookup = 'THROW: ' . $e->getMessage();
+                    }
+                    fwrite(STDERR, "DBG after first insert ($permission): dbCount=" . Permission::query()->count() . " registrarCount=" . app(PermissionRegistrar::class)->getPermissions()->count() . " findByName=$lookup\n");
+                }
             }
 
             $role = Role::findOrCreate($roleName, 'web');
