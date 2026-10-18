@@ -43,6 +43,10 @@
                     </div>
                     <div class="flex items-center gap-4 text-sm">
                         <a href="{{ route('announcements.index') }}" class="text-gray-600 hover:text-indigo-600">Pengumuman</a>
+                        @php($unreadNotifications = auth()->user()->notifications()->whereNull('read_at')->count())
+                        <a href="{{ route('notifications.index') }}" class="text-gray-600 hover:text-indigo-600">
+                            Notifikasi{{ $unreadNotifications > 0 ? ' ('.$unreadNotifications.')' : '' }}
+                        </a>
                         <a href="{{ route('letter_templates.index') }}" class="text-gray-600 hover:text-indigo-600">Template &amp; Surat</a>
                         <a href="{{ route('schools.select') }}" class="text-gray-600 hover:text-indigo-600">Ganti Sekolah</a>
                     </div>

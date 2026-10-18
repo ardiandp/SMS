@@ -31,6 +31,7 @@ class AnnouncementService
         private readonly AuditLogger $audit,
         private readonly CurrentSchool $currentSchool,
         private readonly AnnouncementSanitizer $sanitizer,
+        private readonly NotificationDispatcher $dispatcher,
     ) {}
 
     /**
@@ -99,6 +100,11 @@ class AnnouncementService
             ])->save();
 
             $this->log($announcement, $actor, 'announcement.published');
+
+            // Notifikasi audience mengikuti transaksi: bila publish gagal
+            // (rollback), notifikasi ikut hilang — tidak ada pemberitahuan
+            // untuk pengumuman yang tidak jadi terbit.
+            $this->dispatcher->announcePublished($announcement, $actor);
 
             return $announcement->refresh();
         });

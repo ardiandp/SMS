@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -50,6 +51,18 @@ class User extends Authenticatable
     public function memberships(): HasMany
     {
         return $this->hasMany(SchoolUserMembership::class);
+    }
+
+    /**
+     * Relasi notifikasi memakai model lokal (SchoolScope) menggantikan
+     * DatabaseNotification bawaan, agar baris notifikasi ikut ter-scope
+     * sekolah aktif — notifikasi tidak pernah terbaca lintas tenant.
+     *
+     * @return MorphMany<Notification, $this>
+     */
+    public function notifications(): MorphMany
+    {
+        return $this->morphMany(Notification::class, 'notifiable')->latest();
     }
 
     /**

@@ -26,6 +26,7 @@ class SchoolLetterService
         private readonly AuditLogger $audit,
         private readonly CurrentSchool $currentSchool,
         private readonly AnnouncementSanitizer $sanitizer,
+        private readonly NotificationDispatcher $dispatcher,
     ) {}
 
     /**
@@ -113,6 +114,10 @@ class SchoolLetterService
             ])->save();
 
             $this->log($letter, $actor, 'school_letter.issued');
+
+            // Notifikasi pengelola surat mengikuti transaksi: bila penerbitan
+            // gagal (rollback), notifikasi ikut hilang.
+            $this->dispatcher->letterIssued($letter, $actor);
 
             return $letter->refresh();
         });

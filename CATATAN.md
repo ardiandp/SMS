@@ -19,6 +19,35 @@ Format entri:
 
 ## Progres
 
+### [ID] PRD-05: notifikasi in-app — SELESAI
+- **Apa:** Melengkapi scope PRD-05 yang masih kosong:
+  - Migration `notifications` (skema baku Laravel: uuid, type, morph
+    notifiable, data, read_at) **+ kolom `school_id`** sehingga baris ikut
+    ter-scope SchoolScope — notifikasi tidak pernah terbaca lintas tenant.
+  - Model `Notification` (extends `DatabaseNotification`) dengan auto-fill
+    `school_id` dari konteks tenant; relasi `User::notifications()` di-override
+    memakai model ini.
+  - `NotificationDispatcher` di service: pengumuman terbit → notif anggota
+    sekolah sesuai audience eksplisit (`all`, `role`; `study_group` dilewati
+    karena siswa belum punya akun — PRD-06); surat diterbitkan → notif
+    role `school-admin`/`super-admin`. Pelaku aksi tidak dinotifikasi;
+    trigger dijalankan di dalam transaksi agar atomic.
+  - Payload **hanya judul + link** (tanpa body pengumuman / body_snapshot
+    surat) — anti "jalur bocor data".
+  - UI lonceng (hitung unread) di layout + halaman `/notifications` +
+    tandai-sudah-dibaca (cek kepemilikan eksplisit → 404 untuk notif user lain).
+- **File:** migration `create_notifications_table`, `app/Models/Notification.php`,
+  `app/Models/User.php`, `app/Notifications/{AnnouncementPublished,LetterIssued}.php`,
+  `app/Domain/Administration/NotificationDispatcher.php`,
+  `app/Domain/Administration/{AnnouncementService,SchoolLetterService}.php`,
+  `app/Http/Controllers/NotificationController.php`, `routes/web.php`,
+  `resources/views/layouts/app.blade.php`,
+  `resources/views/notifications/index.blade.php`,
+  `tests/Feature/NotificationTest.php` (6 test).
+- **Verifikasi:** `NotificationTest` **6/6 lulus**; `php artisan migrate`
+  (DB dev) sukses; suite penuh dijalankan terpisah.
+- **Commit:** (isi setelah suite hijau + commit)
+
 ### [ID] Fix RoleSeeder gagal saat `php artisan migrate:fresh --seed` — SELESAI
 - **Apa:** `DatabaseSeeder` memakai `WithoutModelEvents`, sehingga event model
   (termasuk flush otomatis cache Spatie saat `Permission` dibuat) tidak pernah

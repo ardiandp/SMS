@@ -18,6 +18,7 @@ use App\Http\Controllers\FinalGradeController;
 use App\Http\Controllers\GradingPolicyController;
 use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\LetterTemplateController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\ReferenceDataController;
 use App\Http\Controllers\ReportCardController;
@@ -204,5 +205,9 @@ Route::middleware('auth')->group(function () {
         Route::put('school-letters/{schoolLetter}', [SchoolLetterController::class, 'update'])->name('school_letters.update');
         Route::post('school-letters/{schoolLetter}/issue', [SchoolLetterController::class, 'issue'])->name('school_letters.issue');
         Route::post('school-letters/{schoolLetter}/cancel', [SchoolLetterController::class, 'cancel'])->name('school_letters.cancel');
+
+        // Notifikasi in-app (PRD-05).
+        Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
     });
 });
