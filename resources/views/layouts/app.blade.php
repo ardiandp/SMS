@@ -48,6 +48,9 @@
                             Notifikasi{{ $unreadNotifications > 0 ? ' ('.$unreadNotifications.')' : '' }}
                         </a>
                         <a href="{{ route('letter_templates.index') }}" class="text-gray-600 hover:text-indigo-600">Template &amp; Surat</a>
+                        @canany(['view.students', 'manage.letters', 'manage.announcements'])
+                            <a href="{{ route('reports.index') }}" class="text-gray-600 hover:text-indigo-600">Laporan</a>
+                        @endcanany
                         <a href="{{ route('schools.select') }}" class="text-gray-600 hover:text-indigo-600">Ganti Sekolah</a>
                     </div>
                 @endif

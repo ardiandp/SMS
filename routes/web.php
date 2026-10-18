@@ -22,6 +22,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\ReferenceDataController;
 use App\Http\Controllers\ReportCardController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SchoolLetterController;
 use App\Http\Controllers\SchoolSwitchController;
 use App\Http\Controllers\StudentController;
@@ -209,5 +210,11 @@ Route::middleware('auth')->group(function () {
         // Notifikasi in-app (PRD-05).
         Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::post('notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+
+        // Laporan administratif generik (PRD-05): registry whitelist kolom,
+        // filter periode, ekspor CSV berbatas.
+        Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/{report}', [ReportController::class, 'show'])->name('reports.show');
+        Route::get('reports/{report}/export', [ReportController::class, 'export'])->name('reports.export');
     });
 });
