@@ -165,4 +165,37 @@ class AnnouncementTest extends TestCase
             ->assertSee('Upacara Bendera Senin')
             ->assertDontSee('Draf Rahasia');
     }
+
+    public function test_dashboard_hides_role_scoped_announcement_from_other_roles(): void
+    {
+        $teacherRoleId = \Spatie\Permission\Models\Role::findByName('teacher', 'web')->getKey();
+        $staffRoleId = \Spatie\Permission\Models\Role::findByName('staff', 'web')->getKey();
+
+        $announcement = Announcement::factory()->published()->create([
+            'school_id' => $this->school->id,
+            'title' => 'Rapat Guru Khusus',
+            'created_by' => $this->admin->id,
+        ]);
+        $announcement->recipients()->create([
+            'school_id' => $this->school->id,
+            'audience_type' => 'role',
+            'audience_id' => $teacherRoleId,
+        ]);
+
+        $teacher = $this->makeUserWithRole($this->school, 'teacher');
+        $staff = $this->makeUserWithRole($this->school, 'staff');
+        $this->refreshPermissionCache();
+
+        $this->actingInSchool($teacher, $this->school)
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertSee('Rapat Guru Khusus');
+
+        $this->actingInSchool($staff, $this->school)
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertDontSee('Rapat Guru Khusus');
+
+        $this->assertNotSame($teacherRoleId, $staffRoleId);
+    }
 }

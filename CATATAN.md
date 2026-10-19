@@ -19,6 +19,23 @@ Format entri:
 
 ## Progres
 
+### [ID] PRD-05: test acceptance penutup (dashboard audience, duplikat nomor, snapshot surat) — SELESAI
+- **Apa:** Menutup test gap sesuai daftar Tests PRD-05 yang belum ter-cover:
+  - Dashboard menyembunyikan pengumuman ber-audience `role` dari role lain
+    (`AnnouncementTest::test_dashboard_hides_role_scoped_announcement_from_other_roles`).
+  - Nomor surat duplikat ditolak dalam tenant yang sama, tetapi boleh dipakai
+    ulang di tenant lain — membuktikan constraint unik per-tenant
+    (`LetterTest::test_duplicate_letter_number_is_rejected_within_tenant`).
+  - Snapshot surat terbit tidak berubah setelah template direvisi
+    (`LetterTest::test_issued_letter_snapshot_survives_template_revision`).
+  - Kode template duplikat wajib lewat alur revisi
+    (`LetterTest::test_duplicate_template_code_requires_revision`).
+  - Tidak ada perubahan kode produksi — hanya test (fitur sudah benar).
+- **File:** `tests/Feature/AnnouncementTest.php`, `tests/Feature/LetterTest.php`.
+- **Verifikasi:** 4 test baru **4/4 lulus** (23 assertions); suite penuh
+  **280/280 lulus** (1001 assertions, naik dari 276 — tidak ada test lama rusak).
+- **Commit:** (isi setelah suite hijau + commit)
+
 ### [ID] PRD-05: laporan administratif generik + ekspor CSV — SELESAI
 - **Apa:** Sesuai pilihan scope: laporan berbasis registry/domain dengan
   pemilihan kolom dan filter periode.

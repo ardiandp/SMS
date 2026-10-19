@@ -255,4 +255,102 @@ class LetterTest extends TestCase
             ->assertOk()
             ->assertSee('Template & Surat');
     }
+
+    public function test_duplicate_letter_number_is_rejected_within_tenant(): void
+    {
+        $this->actingInSchool($this->admin, $this->school)
+            ->post('/school-letters', [
+                'letter_number' => '001/SM/2026',
+                'subject' => 'Undangan Rapat',
+                'body' => 'Hadirkan semua guru.',
+            ])
+            ->assertRedirect(route('school_letters.index'));
+
+        $this->actingInSchool($this->admin, $this->school)
+            ->from('/school-letters/create')
+            ->post('/school-letters', [
+                'letter_number' => '001/SM/2026',
+                'subject' => 'Undangan Lain',
+                'body' => 'Isi lain.',
+            ])
+            ->assertSessionHasErrors('letter_number');
+
+        $this->assertSame(1, SchoolLetter::count());
+
+        // Nomor yang sama di tenant lain tetap boleh dipakai (unik per tenant).
+        $otherSchool = School::factory()->create();
+        $otherAdmin = $this->makeUserWithRole($otherSchool, 'school-admin');
+        $this->refreshPermissionCache();
+
+        $this->actingInSchool($otherAdmin, $otherSchool)
+            ->post('/school-letters', [
+                'letter_number' => '001/SM/2026',
+                'subject' => 'Surat Sekolah Lain',
+                'body' => 'Isi.',
+            ])
+            ->assertRedirect(route('school_letters.index'));
+
+        $this->assertSame(1, SchoolLetter::where('school_id', $otherSchool->id)->count());
+    }
+
+    public function test_issued_letter_snapshot_survives_template_revision(): void
+    {
+        $template = LetterTemplate::factory()->create([
+            'school_id' => $this->school->id,
+            'code' => 'SKL-001',
+            'version' => 1,
+            'is_active' => true,
+            'body_template' => 'Halo {{nama}}, selamat.',
+            'created_by' => $this->admin->id,
+        ]);
+
+        $letter = SchoolLetter::factory()->create([
+            'school_id' => $this->school->id,
+            'template_id' => $template->id,
+            'letter_number' => '003/SM/2026',
+            'status' => SchoolLetterStatus::Draft,
+            'body_snapshot' => 'Halo Budi, selamat.',
+            'created_by' => $this->admin->id,
+        ]);
+
+        $this->actingInSchool($this->admin, $this->school)
+            ->post("/school-letters/{$letter->id}/issue")
+            ->assertRedirect(route('school_letters.index'));
+
+        $snapshot = $letter->refresh()->body_snapshot;
+        $this->assertSame('Halo Budi, selamat.', $snapshot);
+
+        // Revisi template belakangan tidak boleh mengubah snapshot surat terbit.
+        $this->actingInSchool($this->admin, $this->school)
+            ->put("/letter-templates/{$template->id}", [
+                'name' => 'SKL Revisi',
+                'body_template' => 'Halo {{nama}}, selamat DENGAN PUJIAN.',
+            ])
+            ->assertRedirect(route('letter_templates.index'));
+
+        $this->assertSame($snapshot, $letter->refresh()->body_snapshot);
+        $this->assertSame(SchoolLetterStatus::Issued, $letter->refresh()->status);
+    }
+
+    public function test_duplicate_template_code_requires_revision(): void
+    {
+        LetterTemplate::factory()->create([
+            'school_id' => $this->school->id,
+            'code' => 'SKL-001',
+            'version' => 1,
+            'is_active' => true,
+            'created_by' => $this->admin->id,
+        ]);
+
+        $this->actingInSchool($this->admin, $this->school)
+            ->from('/letter-templates/create')
+            ->post('/letter-templates', [
+                'code' => 'SKL-001',
+                'name' => 'Duplikat',
+                'body_template' => 'Isi.',
+            ])
+            ->assertSessionHasErrors('code');
+
+        $this->assertSame(1, LetterTemplate::count());
+    }
 }
