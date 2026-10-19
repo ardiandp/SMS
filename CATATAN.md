@@ -34,7 +34,7 @@ Format entri:
 - **File:** `tests/Feature/AnnouncementTest.php`, `tests/Feature/LetterTest.php`.
 - **Verifikasi:** 4 test baru **4/4 lulus** (23 assertions); suite penuh
   **280/280 lulus** (1001 assertions, naik dari 276 — tidak ada test lama rusak).
-- **Commit:** (isi setelah suite hijau + commit)
+- **Commit:** `adbd112` (+ commit CATATAN menyusul)
 
 ### [ID] PRD-05: laporan administratif generik + ekspor CSV — SELESAI
 - **Apa:** Sesuai pilihan scope: laporan berbasis registry/domain dengan
