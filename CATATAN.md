@@ -58,6 +58,21 @@ Format entri:
   **280/280 lulus** (1001 assertions, naik dari 276 — tidak ada test lama rusak).
 - **Commit:** `adbd112` (+ commit CATATAN menyusul)
 
+### [ID] PRD-06: notifikasi audience study_group (portali siswa + wali) — SELESAI
+- **Apa:** Lanjutkan tugas `study_group` untuk notifikasi:
+  - `NotificationDispatcher::studyGroupUsers()` — penerima audience `study_group`:
+    - Siswa: akun portal (`StudentUserLink`) yang penempatannya aktif
+      (`PlacementStatus::Active`) di rombel.
+    - Wali: akun portal (`GuardianUserLink`) yang terhubung ke siswa dalam
+      rombel dan **mengaktifkan** `receives_notifications` di pivot
+      `student_guardians` (preferensi komunikasi wali).
+  - Payload tetap minimal: judul + link saja (anti jalur bocor data).
+- **File:** `app/Domain/Administration/NotificationDispatcher.php`
+  (`studyGroupUsers()`), `app/Models/StudentGuardian.php`, `app/Models/Guardian.php`.
+- **Verifikasi:** `php artisan test` (suite penuh); review kode against
+  `NotificationTest` (6 test) dan `PortalTest` (6 test).
+- **Commit:** `33be252`
+
 ### [ID] PRD-05: laporan administratif generik + ekspor CSV — SELESAI
 - **Apa:** Sesuai pilihan scope: laporan berbasis registry/domain dengan
   pemilihan kolom dan filter periode.
@@ -94,9 +109,9 @@ Format entri:
     `school_id` dari konteks tenant; relasi `User::notifications()` di-override
     memakai model ini.
   - `NotificationDispatcher` di service: pengumuman terbit → notif anggota
-    sekolah sesuai audience eksplisit (`all`, `role`; `study_group` dilewati
-    karena siswa belum punya akun — PRD-06); surat diterbitkan → notif
-    role `school-admin`/`super-admin`. Pelaku aksi tidak dinotifikasi;
+    sekolah sesuai audience eksplisit (`all`, `role`; `study_group` → akun
+    portal siswa + wali yang menerima notifikasi, PRD-06); surat diterbitkan →
+    notif role `school-admin`/`super-admin`. Pelaku aksi tidak dinotifikasi;
     trigger dijalankan di dalam transaksi agar atomic.
   - Payload **hanya judul + link** (tanpa body pengumuman / body_snapshot
     surat) — anti "jalur bocor data".
