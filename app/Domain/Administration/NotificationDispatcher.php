@@ -3,9 +3,13 @@
 namespace App\Domain\Administration;
 
 use App\Domain\Tenancy\CurrentSchool;
+use App\Enums\PlacementStatus;
 use App\Enums\UserStatus;
 use App\Models\Announcement;
+use App\Models\GuardianUserLink;
 use App\Models\SchoolLetter;
+use App\Models\StudentUserLink;
+use App\Models\StudyGroupMember;
 use App\Models\User;
 use App\Notifications\AnnouncementPublished;
 use App\Notifications\LetterIssued;
@@ -60,7 +64,10 @@ class NotificationDispatcher
             $users = $users->concat(match ($recipient->audience_type) {
                 'all' => $this->schoolMembers(),
                 'role' => $this->roleUsers($recipient->audience_id),
-                // study_group: siswa belum memiliki akun pengguna (PRD-06).
+                // study_group (PRD-06): akun portal siswa yang penempatannya
+                // aktif di rombel itu + akun wali yang terhubung ke siswa
+                // tersebut dan memilih menerima notifikasi.
+                'study_group' => $this->studyGroupUsers($recipient->audience_id),
                 default => new Collection,
             });
         }
@@ -108,6 +115,63 @@ class NotificationDispatcher
         // Role dipakai lewat fitur teams Spatie: hanya anggota role di
         // sekolah aktif (team id dari CurrentSchool) yang kembali.
         return User::role($role->name)
+            ->where('status', UserStatus::Active->value)
+            ->get();
+    }
+
+    /**
+     * Akun portal untuk satu rombel (PRD-06): akun siswa yang penempatannya
+     * aktif di rombel + akun wali dari siswa-siswa itu — tetapi hanya wali
+     * yang pivot `receives_notifications`-nya true (preferensi komunikasi).
+     * Wali yang opt-out tetap bisa membaca pengumuman lewat portal, hanya
+     * tidak menerima notifikasi push.
+     *
+     * @return Collection<int, User>
+     */
+    private function studyGroupUsers(?int $studyGroupId): Collection
+    {
+        if ($studyGroupId === null) {
+            return new Collection;
+        }
+
+        $studentIds = StudyGroupMember::query()
+            ->where('study_group_id', $studyGroupId)
+            ->where('status', PlacementStatus::Active)
+            ->pluck('student_id')
+            ->all();
+
+        if ($studentIds === []) {
+            return new Collection;
+        }
+
+        $studentUserIds = StudentUserLink::query()
+            ->whereIn('student_id', $studentIds)
+            ->pluck('user_id')
+            ->all();
+
+        // Wali: hanya yang masih terhubung (link aktif) ke siswa rombel ini
+        // DAN memilih menerima notifikasi pada pivot student_guardians.
+        $guardianIds = \App\Models\StudentGuardian::query()
+            ->whereIn('student_id', $studentIds)
+            ->where('receives_notifications', true)
+            ->pluck('guardian_id')
+            ->all();
+
+        $guardianUserIds = $guardianIds === []
+            ? []
+            : GuardianUserLink::query()
+                ->whereIn('guardian_id', $guardianIds)
+                ->pluck('user_id')
+                ->all();
+
+        $ids = array_unique([...$studentUserIds, ...$guardianUserIds]);
+
+        if ($ids === []) {
+            return new Collection;
+        }
+
+        return User::query()
+            ->whereIn('id', $ids)
             ->where('status', UserStatus::Active->value)
             ->get();
     }
