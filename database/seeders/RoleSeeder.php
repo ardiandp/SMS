@@ -93,6 +93,19 @@ class RoleSeeder extends Seeder
     ];
 
     /**
+     * Student/parent portal permissions (PRD-06).
+     *
+     * `portal.access` gates the portal shell itself; which rows a portal user
+     * may see is decided per-request by PortalAccess (account links), never
+     * by this permission alone — an ID alone authorizes nothing. Staff roles
+     * deliberately do NOT get this permission: portal views hide
+     * administrative context that staff dashboards need.
+     */
+    private const PORTAL_PERMISSIONS = [
+        'portal.access',
+    ];
+
+    /**
      * Baseline roles/permissions for the platform foundation (PRD-00).
      * Roles are global; per-school assignment happens through the teams feature.
      */
@@ -138,6 +151,11 @@ class RoleSeeder extends Seeder
                 'view.grades',
                 'manage.assessments',
             ],
+            // Akun portal (PRD-06): hanya gerbang portal. Baris data apa pun
+            // yang boleh dilihat diputus per-request oleh PortalAccess dari
+            // tabel link akun — permission ini saja tidak membuka data apa pun.
+            'student' => self::PORTAL_PERMISSIONS,
+            'parent' => self::PORTAL_PERMISSIONS,
         ];
 
         foreach ($roles as $roleName => $permissions) {

@@ -45,6 +45,8 @@ use App\Models\Student;
 use App\Models\StudentDocument;
 use App\Models\StudentGuardian;
 use App\Models\StudentStatusHistory;
+use App\Models\StudentUserLink;
+use App\Models\GuardianUserLink;
 use App\Models\StudyGroup;
 use App\Models\StudyGroupMember;
 use App\Models\Subject;
@@ -144,7 +146,8 @@ class DemoSeeder extends Seeder
         $classrooms = $this->seedClassrooms($school);
 
         $cohorts = $this->seedStudents($school, $admin);
-        $this->seedGuardians($cohorts['all']);
+        $firstGuardians = $this->seedGuardians($cohorts['all']);
+        $this->seedPortalAccounts($school, $cohorts['all'], $firstGuardians);
         $this->seedStudentDocuments($school, $cohorts['all'], $admin);
         $this->seedStatusHistories($school, $cohorts, $admin);
 
@@ -472,9 +475,13 @@ class DemoSeeder extends Seeder
 
     /**
      * @param  array<int, Student>  $students
+     *
+     * @return array<int, Guardian> wali pertama (ayah) tiap siswa, sejajar indeks.
      */
-    private function seedGuardians(array $students): void
+    private function seedGuardians(array $students): array
     {
+        $first = [];
+
         foreach ($students as $index => $student) {
             $ayah = Guardian::create([
                 'school_id' => $student->school_id,
@@ -483,6 +490,8 @@ class DemoSeeder extends Seeder
                 'email' => fake()->unique()->safeEmail(),
                 'address' => fake('id_ID')->address(),
             ]);
+
+            $first[] = $ayah;
 
             StudentGuardian::create([
                 'school_id' => $student->school_id,
@@ -515,6 +524,65 @@ class DemoSeeder extends Seeder
                 ]);
             }
         }
+
+        return $first;
+    }
+
+    /**
+     * Akun portal demo (PRD-06): satu siswa + satu wali multi-anak.
+     *
+     * Wali pertama ditempeli anak kedua juga → mensimulasikan wali dengan
+     * beberapa anak yang berpindah profil. Password semua: "password".
+     *
+     * @param  array<int, Student>  $students
+     * @param  array<int, Guardian>  $firstGuardians
+     */
+    private function seedPortalAccounts(School $school, array $students, array $firstGuardians): void
+    {
+        if ($students === [] || $firstGuardians === []) {
+            return;
+        }
+
+        $studentAccount = $this->makeUser(
+            $students[0]->full_name,
+            'siswa@nusantara.test',
+            'student',
+            $school,
+        );
+
+        StudentUserLink::create([
+            'school_id' => $school->getKey(),
+            'student_id' => $students[0]->getKey(),
+            'user_id' => $studentAccount->getKey(),
+        ]);
+
+        // Anak kedua ditempel ke wali pertama juga → wali multi-anak.
+        if (isset($students[1], $firstGuardians[0])) {
+            StudentGuardian::create([
+                'school_id' => $school->getKey(),
+                'student_id' => $students[1]->getKey(),
+                'guardian_id' => $firstGuardians[0]->getKey(),
+                'relationship' => 'father',
+                'is_primary' => false,
+                'can_pickup' => true,
+                'receives_notifications' => true,
+            ]);
+        }
+
+        $parentAccount = $this->makeUser(
+            $firstGuardians[0]->full_name,
+            'wali@nusantara.test',
+            'parent',
+            $school,
+        );
+
+        GuardianUserLink::create([
+            'school_id' => $school->getKey(),
+            'guardian_id' => $firstGuardians[0]->getKey(),
+            'user_id' => $parentAccount->getKey(),
+        ]);
+
+        $this->command?->line('  Akun portal: siswa@nusantara.test & wali@nusantara.test (password "password").');
     }
 
     /**

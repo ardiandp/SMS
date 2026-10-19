@@ -19,6 +19,7 @@ use App\Http\Controllers\GradingPolicyController;
 use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\LetterTemplateController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PortalController;
 use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\ReferenceDataController;
 use App\Http\Controllers\ReportCardController;
@@ -216,5 +217,15 @@ Route::middleware('auth')->group(function () {
         Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('reports/{report}', [ReportController::class, 'show'])->name('reports.show');
         Route::get('reports/{report}/export', [ReportController::class, 'export'])->name('reports.export');
+
+        // Portal siswa & orang tua (PRD-06). Gerbang permission ada di
+        // controller (can:portal.access); otorisasi baris data per-request
+        // lewat PortalAccess::allowStudent() — bukan policy Gate.
+        Route::get('portal', [PortalController::class, 'index'])->name('portal.index');
+        Route::get('portal/students/{student}/schedule', [PortalController::class, 'schedule'])->name('portal.schedule');
+        Route::get('portal/students/{student}/attendance', [PortalController::class, 'attendance'])->name('portal.attendance');
+        Route::get('portal/students/{student}/grades', [PortalController::class, 'grades'])->name('portal.grades');
+        Route::get('portal/students/{student}/report-cards', [PortalController::class, 'reportCards'])->name('portal.report-cards');
+        Route::get('portal/students/{student}/announcements', [PortalController::class, 'announcements'])->name('portal.announcements');
     });
 });

@@ -19,6 +19,28 @@ Format entri:
 
 ## Progres
 
+### [ID] PRD-06: Portal Siswa & Orang Tua — SELESAI
+- **Apa:** Portal read-only dengan relasi akun yang terverifikasi di server:
+  - Migration `student_user_links` + `guardian_user_links` (satu akun satu
+    profil per tenant; wali multi-anak lewat `student_guardians`).
+  - Role `student`/`parent` + permission `portal.access` (gerbang shell;
+    otorisasi baris data per-request oleh `PortalAccess`, bukan policy Gate).
+  - `PortalController` + 6 view: jadwal (rombel aktif), absensi, nilai
+    **finalized saja**, rapor **published saja**, pengumuman, beranda dengan
+    switch profil `?student=` (ID tak terotorisasi → 403, bukan fallback).
+  - Pemulihan akses (lupa password bawaan Laravel, token 60 menit) +
+    `PortalLinkService::revoke()` dengan audit.
+  - DemoSeeder: akun demo siswa + wali multi-anak.
+- **File:** `app/Domain/Portal/{PortalAccess,PortalLinkService}.php`,
+  `app/Http/Controllers/{PortalController,Auth/PasswordResetController}.php`,
+  `app/Models/{StudentUserLink,GuardianUserLink}.php`, 2 migration, 2 factory,
+  `routes/web.php`, `resources/views/portal/*`, `tests/Feature/PortalTest.php`
+  (6 test: guardian-link, unrelated-403, student-isolation, draft-hidden,
+  revocation, tenant-isolation), `database/seeders/{RoleSeeder,DemoSeeder}.php`.
+- **Verifikasi:** `PortalTest` **6/6 lulus**; suite penuh **286/286 lulus**
+  (1021 assertions, naik dari 280).
+- **Commit:** <hash>
+
 ### [ID] PRD-05: test acceptance penutup (dashboard audience, duplikat nomor, snapshot surat) — SELESAI
 - **Apa:** Menutup test gap sesuai daftar Tests PRD-05 yang belum ter-cover:
   - Dashboard menyembunyikan pengumuman ber-audience `role` dari role lain
