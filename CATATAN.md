@@ -19,6 +19,33 @@ Format entri:
 
 ## Progres
 
+### [ID] PRD-05: laporan administratif generik + ekspor CSV — SELESAI
+- **Apa:** Sesuai pilihan scope: laporan berbasis registry/domain dengan
+  pemilihan kolom dan filter periode.
+  - `ReportCatalog` (registry whitelist di server): 3 laporan awal —
+    `students` (permission `view.students`), `letters` (`manage.letters`),
+    `announcements` (`manage.announcements`). Tiap definisi memuat model
+    (otomatis SchoolScope), kolom yang boleh dipilih + penerjemah nilai, dan
+    kolom dasar periode. **Input user tidak pernah jadi nama tabel/kolom
+    query** — hanya kunci whitelist yang dikenal (tolak injeksi skema).
+  - `ReportController`: `/reports` (daftar berotorisasi), `/reports/{report}`
+    (tabel + paginasi 20 + form periode/kolom), `/reports/{report}/export`
+    (CSV streaming `chunkById`, ordering di-reorder dulu agar chunking benar).
+  - **Export limit**: default 5.000 baris (config `reports.export_limit`);
+    di atas itu ekspor ditolak dengan pesan mempersempit periode.
+  - Nav "Laporan" muncul jika user punya salah satu permission laporan.
+- **File:** `app/Domain/Administration/ReportCatalog.php`,
+  `app/Http/Controllers/ReportController.php`, `routes/web.php`,
+  `resources/views/layouts/app.blade.php`,
+  `resources/views/reports/{index,show}.blade.php`,
+  `tests/Feature/ReportTest.php` (8 test: daftar-berotorisasi, filter
+  periode+kolom, key tak dikenal 404, tanpa permission 403, kolom tak
+  dikenal ditolak, isolasi tenant, ekspor CSV dalam batas, ekspor ditolak
+  saat melebihi batas).
+- **Verifikasi:** `ReportTest` + `ReportCardTest` **19/19 lulus**; suite
+  penuh **276/276 lulus** (978 assertions).
+- **Commit:** `505f773` (+ commit CATATAN menyusul)
+
 ### [ID] PRD-05: notifikasi in-app — SELESAI
 - **Apa:** Melengkapi scope PRD-05 yang masih kosong:
   - Migration `notifications` (skema baku Laravel: uuid, type, morph
