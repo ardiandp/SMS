@@ -39,7 +39,7 @@ Format entri:
   revocation, tenant-isolation), `database/seeders/{RoleSeeder,DemoSeeder}.php`.
 - **Verifikasi:** `PortalTest` **6/6 lulus**; suite penuh **286/286 lulus**
   (1021 assertions, naik dari 280).
-- **Commit:** <hash>
+- **Commit:** `b013130`
 
 ### [ID] PRD-05: test acceptance penutup (dashboard audience, duplikat nomor, snapshot surat) — SELESAI
 - **Apa:** Menutup test gap sesuai daftar Tests PRD-05 yang belum ter-cover:
