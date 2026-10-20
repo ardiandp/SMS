@@ -23,7 +23,7 @@ class TenantConsistencyGuard
     /**
      * @param  list<string>  $attributes  attribute names holding foreign keys
      */
-    public function assertSameSchool(string $schoolId, object $model, array $attributes): void
+    public function assertSameSchool(int|string $schoolId, object $model, array $attributes): void
     {
         foreach ($attributes as $attribute) {
             $value = $model->{$attribute} ?? null;
@@ -49,7 +49,7 @@ class TenantConsistencyGuard
      * @param  iterable<object>  $models
      * @param  list<string>  $attributes
      */
-    public function assertRelated(iterable $models, string $schoolId, array $attributes): void
+    public function assertRelated(iterable $models, int|string $schoolId, array $attributes): void
     {
         foreach ($models as $model) {
             if ($model !== null) {

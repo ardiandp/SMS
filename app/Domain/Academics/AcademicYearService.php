@@ -66,6 +66,7 @@ class AcademicYearService
             $previousStatus = $year->is_active;
 
             $year->fill($data);
+            unset($year->school_id);
 
             if ($year->starts_on->greaterThan($year->ends_on)) {
                 throw ValidationException::withMessages([

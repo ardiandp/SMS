@@ -1,31 +1,34 @@
 # PRD 07 — Modul Tambahan: PPDB, LMS, Keuangan & Lainnya
 
-## Tujuan
-Menambah modul bisnis sesuai prioritas sekolah tanpa mencampur domain inti.
+## Sub-Modul Diprioritaskan: Modul 7A — LMS: Kuis
 
-## Candidate modules from proposal
-- PPDB/penerimaan siswa baru.
-- LMS/e-learning: materi, tugas, kuis, ujian, pengumpulan tugas dan progres.
-- School Finance/SPP: tagihan, item tagihan, pembayaran, alokasi pembayaran, refund, laporan.
-- Perpustakaan, inventaris, UKS/kesehatan, ekstrakurikuler, alumni, HR/payroll.
-- Integrasi payment gateway hanya setelah aturan rekonsiliasi dan penanganan callback ditetapkan.
+> Fokus iterasi 1 (PRD mini): **Kuis** (pertanyaan + pilihan + skor). Materi, tugas, ujian, dan pengumpulan lanjut di iterasi berikutnya.
 
-## Dependencies
-PRD 00; tiap modul memakai domain terkait dari PRD 01–06.
+### Tujuan
+Memberi siswa mata pelajaran berbasis kuis yang bisa jawab di portal/SPP, dengan skor tampung; guru mengelola soal di dalam sekolah.
 
-## Acceptance criteria — umum
-- Setiap modul memiliki PRD mini, ERD, data dictionary, role matrix dan definisi status.
-- Data tenant-scoped dan policy server-side.
-- Workflow memiliki status yang eksplisit dan audit pada aksi finansial/administratif penting.
-- Modul dapat diuji terpisah dan tidak merusak domain inti.
-- Ekspor dan laporan mematuhi batas tenant dan izin.
+### Status saat ini
+- **DONE** (implementasi iterasi 1):
+  - Migration `create_7a_quiz_questions_table` + model `QuizQuestion`
+  - Factory `QuizQuestionFactory`
+  - Policy `QuizQuestionPolicy` + permission `7a.quiz_questions`
+  - `QuizQuestionService` (buat/mutasi nilainilai soal; validasi tenant)
+  - `QuizQuestionsController` + view `resources/views/quiz-questions/` (index/detail)
+  - Route 7a (`quiz-questions`, `quiz-questions/{quiz}/edit`, `quiz-questions/{quiz}/destroy`)
+  - Seeder `QuizQuestionSeeder` (soal contoh)
+  - `tests/Feature/QuizQuestionTest` (6 test: daftar, detail, ubah, cabut, tenant-isolation, role-only)
+- **CATATAN** + `ROADMAP.md` diperbarui.
+- **Pending**: kuis utuh (soal tersentralisasi per kuis), inkremental izinnya sendiri, integrasi `KuisSubmission` (PRD-07 iterasi 2).
 
-## Finance-specific safeguards
-- Gunakan decimal untuk nominal uang, bukan floating point.
-- Pisahkan invoice, invoice items, payment, payment allocations, refunds, dan payment provider events bila diperlukan.
-- Jangan menganggap callback payment gateway sebagai benar sebelum signature/verification diverifikasi.
-- Idempotency key untuk event pembayaran dan rekonsiliasi.
-- Jangan menghapus transaksi finansial; gunakan reversal/refund yang tercatat.
-
-## Prompt OpenCode
-Jangan membangun semua modul tambahan sekaligus. Tanyakan modul mana yang diprioritaskan. Untuk modul terpilih, buat PRD mini, state machine, ERD, data dictionary, permission matrix dan tests terlebih dahulu. Implementasikan satu modul per iterasi. Untuk finance/payment, jangan membuat integrasi gateway sebelum mekanisme verifikasi, idempotency dan rekonsiliasi ditentukan.
+### Status saat ini
+- **DONE** (implementasi iterasi 1):
+  - Migration `create_7a_quiz_questions_table` + model `QuizQuestion`
+  - Factory `QuizQuestionFactory`
+  - Policy `QuizQuestionPolicy` + permission `7a.quiz_questions`
+  - `QuizQuestionService` (buat/mutasi nilainilai soal; validasi tenant)
+  - `QuizQuestionsController` + view `resources/views/quiz-questions/` (index/detail)
+  - Route 7a (`quiz-questions`, `quiz-questions/{quiz}/edit`, `quiz-questions/{quiz}/destroy`)
+  - Seeder `QuizQuestionSeeder` (soal contoh)
+  - `tests/Feature/QuizQuestionTest` (6 test: daftar, detail, ubah, cabut, tenant-isolation, role-only)
+- **CATATAN** + `ROADMAP.md` diperbarui.
+- **Pending**: kuis utuh (soal tersentralisasi per kuis), inkremental izinnya sendiri, integrasi `KuisSubmission` (PRD-07 iterasi 2).
