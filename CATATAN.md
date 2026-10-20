@@ -19,7 +19,23 @@ Format entri:
 
 ## Progres
 
-### [ID] PRD-07 iterasi 2: Quiz header (kelompokkan soal per kuis) — SELESAI
+### [ID] PRD-07 iterasi 3: KuisSubmission (pengumpulan jawaban siswa) — SELESAI
+- **Apa:** Tambah entitas `QuizSubmission` untuk mencatat jawaban dan nilai siswa per kuis, dengan siklus draft → submitted → graded.
+  - Migration `create_7a_quiz_submissions_table` (answers JSON, score, max_score, status enum, submitted_at, graded_at, feedback).
+  - Model `QuizSubmission` dengan `ScopedBySchool` (tenant-scoped), relasi `quiz()`, `student()`, `grader()`.
+  - `QuizSubmissionService` (create/update/submit/grade/delete, semua assert active school; `unset school_id` pada update; validasi status transisi).
+  - `QuizSubmissionPolicy` + permissions `view.quiz-submissions`, `submit.quiz-submission`, `grade.quiz-submission`, `manage.quiz-submissions`.
+  - `QuizSubmissionsController` + route `admin/lms/quiz-submissions` (index/show/store/update/submit/grade/destroy), semua scope `school_id` dari active tenant.
+  - Views `quiz-submissions/` (index, show) tanpa tenant leak (tidak ada `school_id` dari input).
+  - Factory `QuizSubmissionFactory` + `forQuizAndStudent()` (semua FK ter-bind ke satu tenant).
+  - Seeder `QuizSubmissionSeeder` (submission per quiz aktif + siswa di sekolah yang sama).
+  - Permission ditambahkan ke `RoleSeeder` + `AppServiceProvider` bind `QuizSubmissionPolicy`.
+  - `QuizSubmissionTest` (9 test: list, view, create, update, submit, grade, delete, tenant-isolation, role-only).
+- **File:** `database/migrations/2026_10_20_070900_create_7a_quiz_submissions_table.php`, `app/Models/Domain/Academics/QuizSubmission.php`, `app/Domain/Academics/QuizSubmissionService.php`, `app/Policies/QuizSubmissionPolicy.php`, `app/Http/Controllers/QuizSubmissionsController.php`, `database/factories/Domain/Academics/QuizSubmissionFactory.php`, `database/seeders/QuizSubmissionSeeder.php`, `database/seeders/RoleSeeder.php`, `app/Providers/AppServiceProvider.php`, `routes/web.php`, `resources/views/quiz-submissions/{index,show}.blade.php`, `tests/Feature/QuizSubmissionTest.php`, `CATATAN.md`.
+- **Verifikasi:** Semua file baru lolos `php -l`; `QuizQuestionTest` dan `QuizTest` **lulus** (sebelumnya). Suite penuh tidak bisa dijalankan karena MySQL tidak tersedia di environment ini (`Connection refused`) — masalah infrastruktur, bukan kode.
+- **Commit:** <diisi setelah commit>
+
+---
 - **Apa:** Tambah entitas `Quiz` (header) yang mengelompokkan `QuizQuestion`, sehingga pengguna dapat membuat banyak kuis dan memilih kuis mana yang akan digunakan (lebih general daripada soal terpisah).
   - Migration `create_7a_quizzes_table` + `add_quiz_id_to_7a_quiz_questions_table`.
   - Model `Quiz` dengan `ScopedBySchool` (tenant-scoped), relasi `questions()`.

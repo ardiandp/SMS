@@ -7,6 +7,7 @@ use App\Models\Domain\Academics\Quiz;
 use App\Models\Domain\Academics\QuizQuestion;
 use App\Policies\QuizPolicy;
 use App\Policies\QuizQuestionPolicy;
+use App\Policies\QuizSubmissionPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -31,5 +32,6 @@ class AppServiceProvider extends ServiceProvider
         // "Gate policy not defined" instead of running QuizQuestionPolicy.
         Gate::policy(Quiz::class, QuizPolicy::class);
         Gate::policy(QuizQuestion::class, QuizQuestionPolicy::class);
+        Gate::policy(QuizSubmission::class, QuizSubmissionPolicy::class);
     }
 }

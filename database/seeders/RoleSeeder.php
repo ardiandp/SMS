@@ -117,6 +117,10 @@ class RoleSeeder extends Seeder
         'manage.quiz-questions',
         'view.quizzes',
         'manage.quizzes',
+        'view.quiz-submissions',
+        'submit.quiz-submission',
+        'grade.quiz-submission',
+        'manage.quiz-submissions',
     ];
 
     /**

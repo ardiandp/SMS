@@ -17,6 +17,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FinalGradeController;
 use App\Http\Controllers\GradingPolicyController;
 use App\Http\Controllers\QuizQuestionsController;
+use App\Http\Controllers\QuizSubmissionsController;
 use App\Http\Controllers\QuizzesController;
 use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\LetterTemplateController;
@@ -268,6 +269,22 @@ Route::middleware('auth')->group(function () {
                 ->name('quizzes.destroy');
             Route::post('quizzes/{id}/restore', [QuizzesController::class, 'restore'])
                 ->name('quizzes.restore');
+
+            // PRD 07 iterasi 3: pengumpulan jawaban kuis oleh siswa.
+            Route::get('quiz-submissions', [QuizSubmissionsController::class, 'index'])
+                ->name('quiz-submissions.index');
+            Route::post('quiz-submissions', [QuizSubmissionsController::class, 'store'])
+                ->name('quiz-submissions.store');
+            Route::get('quiz-submissions/{id}', [QuizSubmissionsController::class, 'show'])
+                ->name('quiz-submissions.show');
+            Route::put('quiz-submissions/{id}', [QuizSubmissionsController::class, 'update'])
+                ->name('quiz-submissions.update');
+            Route::post('quiz-submissions/{id}/submit', [QuizSubmissionsController::class, 'submit'])
+                ->name('quiz-submissions.submit');
+            Route::post('quiz-submissions/{id}/grade', [QuizSubmissionsController::class, 'grade'])
+                ->name('quiz-submissions.grade');
+            Route::delete('quiz-submissions/{id}', [QuizSubmissionsController::class, 'destroy'])
+                ->name('quiz-submissions.destroy');
         });
     });
 });
