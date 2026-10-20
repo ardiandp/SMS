@@ -236,7 +236,7 @@ Format entri:
 ## Langkah berikutnya
 
 - Verifikasi ulang migrasi `7a_quiz_questions` dan `7a_quiz_submissions` serta jalankan `migrate:fresh --seed` setelah MySQL tersedia (saat ini diblokir infrastruktur: `Connection refused`).
-- PRD-07 (LMS: Kuis) iterasi 1–3 telah selesai; belum ada PRD-08, siapkan rencana modul selanjutnya jika ada.
+- PRD-07 (LMS: Kuis) iterasi 1–3 telah selesai; PRD-08 (Production Readiness) dan PRD-09 (AI School Assistant) sudah tersedia sebagai dokumen tapi BELUM dikerjakan; pilih salah satu untuk lanjut.
 
 --- 
 
