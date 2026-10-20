@@ -28,7 +28,7 @@ class QuizSubmissionsController extends Controller
         $studentId = $request->integer('student_id');
         $status = $request->string('status');
 
-        $query = $this->service->getActive($schoolId)
+        $query = QuizSubmission::where('school_id', $schoolId)
             ->with(['quiz', 'student', 'grader']);
 
         if ($quizId) {

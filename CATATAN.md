@@ -19,6 +19,14 @@ Format entri:
 
 ## Progres
 
+### [ID] Fix: QuizSubmission index menampilkan semua status termasuk draft — SELESAI
+- **Apa:** Perbaiki `QuizSubmissionsController@index` agar tidak mengecualikan submission draft (sebelumnya pakai `getActive()` yang filter `status != 'draft'`), sehingga filter "Draft" di view dan aksi draft (Ubah/Hapus/Kumpulkan) berfungsi.
+- **File:** `app/Http/Controllers/QuizSubmissionsController.php`
+- **Verifikasi:** `php -l` lolos; `QuizSubmission` sudah diimpor (baris 8). Suite penuh tidak bisa dijalankan karena MySQL tidak tersedia (`Connection refused`).
+- **Commit:** <diisi setelah commit>
+
+---
+
 ### [ID] PRD-07 iterasi 3: KuisSubmission (pengumpulan jawaban siswa) — SELESAI
 - **Apa:** Tambah entitas `QuizSubmission` untuk mencatat jawaban dan nilai siswa per kuis, dengan siklus draft → submitted → graded.
   - Migration `create_7a_quiz_submissions_table` (answers JSON, score, max_score, status enum, submitted_at, graded_at, feedback).
