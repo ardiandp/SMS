@@ -19,6 +19,46 @@ Format entri:
 
 ## Progres
 
+### [ID] PRD-08: Audit findings dokumentasi — SELESAI
+- **Apa:** Dokumentasi temuan audit kesiapan produksi (10 temuan dengan severity, bukti, dampak, rekomendasi).
+- **File:** `irnis_school_prd/docs/PRD/PRD-08-Audit-Findings.md`
+- **Verifikasi:** File dibuat, tidak ada kode yang diubah (audit read-only).
+- **Commit:** 84af06e feat(prd-08): health check, security headers, dan rate limiting
+
+---
+
+### [ID] PRD-08: Health check endpoint, security headers, rate limiting — SELESAI
+- **Apa:** Tambah HealthController + route /health; daftarkan SecurityHeaders middleware global; rate limiting pada students.import.commit (10/m), quiz-submissions submit/grade (30/m).
+- **File:** `app/Http/Controllers/HealthController.php`, `app/Http/Middleware/SecurityHeaders.php`, `bootstrap/app.php`, `routes/web.php`
+- **Verifikasi:** `php -l` lolos semua file. Suite penuh tidak bisa dijalankan karena MySQL tidak tersedia (`Connection refused`).
+- **Commit:** 84af06e feat(prd-08): health check, security headers, dan rate limiting
+
+---
+
+### [ID] PRD-08: Session hardening, smoke test, isolasi lintas tenant, backup — SELESAI
+- **Apa:** `.env.example` SESSION_ENCRYPT=true + SESSION_SECURE_COOKIE true + catatan APP_KEY; SmokeTest; perpanjangan TenantAccessTest dengan uji lintas tenant; scripts/backup-db.sh + restore-drill.md.
+- **File:** `.env.example`, `tests/Feature/SmokeTest.php`, `tests/Feature/TenantAccessTest.php`, `scripts/backup-db.sh`, `scripts/restore-drill.md`
+- **Verifikasi:** `php -l` lolos semua file PHP; `bash -n` lolos backup-db.sh.
+- **Commit:** 829e322 feat(prd-08): session hardening, smoke test, isolasi lintas tenant, dan backup
+
+---
+
+### [ID] PRD-08: Audit log untuk ekspor data sensitif — SELESAI
+- **Apa:** AttendanceReportController::export dan ReportController::export mencatat aksi ke AuditLog (tenant-scored, tanpa PII mentah).
+- **File:** `app/Http/Controllers/AttendanceReportController.php`, `app/Http/Controllers/ReportController.php`
+- **Verifikasi:** `php -l` lolos kedua file.
+- **Commit:** 8321458 feat(prd-08): audit log untuk ekspor data sensitif
+
+---
+
+### [ID] PRD-08: Deployment checklist — SELESAI
+- **Apa:** Dokumentasi prosedur deploy, rollback, incident response, dan smoke test post-deploy.
+- **File:** `DEPLOYMENT.md`
+- **Verifikasi:** File dibuat, tidak ada kode yang diubah.
+- **Commit:** 013a675 docs(prd-08): deployment checklist, rollback, dan incident response
+
+---
+
 ### [ID] Fix: DemoSeeder terdaftar QuizSeeder, QuizQuestionSeeder, QuizSubmissionSeeder — SELESAI
 - **Apa:** Tambah pemanggilan 3 seeder kuis (QuizSeeder, QuizQuestionSeeder, QuizSubmissionSeeder) di akhir `DemoSeeder::run()` beserta import-nya, sehingga data dummy kuis tersedia saat menjalankan `php artisan db:seed --class=DemoSeeder`.
 - **File:** `database/seeders/DemoSeeder.php`
@@ -243,8 +283,9 @@ Format entri:
 
 ## Langkah berikutnya
 
-- Verifikasi ulang migrasi `7a_quiz_questions` dan `7a_quiz_submissions` serta jalankan `migrate:fresh --seed` setelah MySQL tersedia (saat ini diblokir infrastruktur: `Connection refused`).
-- PRD-07 (LMS: Kuis) iterasi 1–3 telah selesai; PRD-08 (Production Readiness) dan PRD-09 (AI School Assistant) sudah tersedia sebagai dokumen tapi BELUM dikerjakan; pilih salah satu untuk lanjut.
+- PRD-08 (Production Readiness) telah diimplementasi sebagian besar: health check, security headers, rate limiting, session hardening, smoke test, isolasi lintas tenant, backup script, audit log ekspor, dan deployment checklist.
+- Sisa: verifikasi ulang migrasi `7a_quiz_questions` dan `7a_quiz_submissions` serta jalankan `migrate:fresh --seed` setelah MySQL tersedia (saat ini diblokir infrastruktur: `Connection refused`).
+- PRD-09 (AI School Assistant) sudah tersedia sebagai dokumen tapi BELUM dikerjakan; pilih untuk lanjut jika PRD-08 dianggap cukup.
 
 --- 
 
