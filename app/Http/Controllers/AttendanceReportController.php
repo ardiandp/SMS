@@ -3,16 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Attendance\AttendanceReportService;
+use App\Domain\Tenancy\AuditLogger;
 use App\Domain\Tenancy\CurrentSchool;
 use App\Models\AttendanceRecord;
 use App\Models\StudyGroup;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class AttendanceReportController extends Controller
 {
-    public function __construct(private readonly AttendanceReportService $reports) {}
+    public function __construct(
+        private readonly AttendanceReportService $reports,
+        private readonly AuditLogger $audit,
+        private readonly CurrentSchool $currentSchool,
+    ) {}
 
     /**
      * Recap across the school for a date range.
@@ -24,7 +31,7 @@ class AttendanceReportController extends Controller
         $from = $request->date('from') ?? now()->startOfMonth();
         $to = $request->date('to') ?? now();
 
-        $school = app(CurrentSchool::class)->school();
+        $school = $this->currentSchool->school();
 
         return view('attendance.reports.index', [
             'from' => $from,
@@ -48,7 +55,8 @@ class AttendanceReportController extends Controller
             'study_group_id' => ['nullable', 'integer'],
         ]);
 
-        $school = app(CurrentSchool::class)->school();
+        $school = $this->currentSchool->school();
+        $actor = Auth::user();
 
         $group = null;
 
@@ -60,6 +68,19 @@ class AttendanceReportController extends Controller
         }
 
         $csv = $this->reports->toCsv($school, $data['from'], $data['to'], $group);
+
+        // Audit log untuk ekspor data sensitif (PRD-08).
+        $this->audit->record(
+            action: 'attendance.exported',
+            school: $school,
+            actor: $actor,
+            metadata: [
+                'from' => $data['from'],
+                'to' => $data['to'],
+                'study_group_id' => $groupId ?? null,
+                'rows' => substr_count($csv, "\n") - 1, // kurangi header
+            ],
+        );
 
         return response($csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',

@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Administration\ReportCatalog;
+use App\Domain\Tenancy\AuditLogger;
+use App\Domain\Tenancy\CurrentSchool;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -21,6 +24,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class ReportController extends Controller
 {
+    public function __construct(
+        private readonly AuditLogger $audit,
+        private readonly CurrentSchool $currentSchool,
+    ) {}
+
     public function index(Request $request): View
     {
         return view('reports.index', [
@@ -49,6 +57,9 @@ class ReportController extends Controller
     {
         [$definition, $columns, $filters] = $this->resolve($request, $report);
 
+        $school = $this->currentSchool->school();
+        $actor = Auth::user();
+
         $query = $this->query($definition, $columns, $filters);
         $limit = $this->exportLimit();
 
@@ -59,6 +70,20 @@ class ReportController extends Controller
         }
 
         $filename = 'laporan-'.$report.'-'.now()->format('Ymd-His').'.csv';
+
+        // Audit log untuk ekspor data sensitif (PRD-08).
+        $this->audit->record(
+            action: 'report.exported',
+            school: $school,
+            actor: $actor,
+            metadata: [
+                'report' => $report,
+                'columns' => $columns,
+                'from' => $filters['from'] ?? null,
+                'to' => $filters['to'] ?? null,
+                'rows' => $query->count(),
+            ],
+        );
 
         return response()->streamDownload(function () use ($query, $columns, $definition): void {
             $out = fopen('php://output', 'w');
@@ -82,68 +107,5 @@ class ReportController extends Controller
 
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
-    }
-
-    /**
-     * Validasi kunci laporan, permission, kolom pilihan, dan filter periode.
-     *
-     * @return array{0: array, 1: list<string>, 2: array{from: ?string, to: ?string}}
-     */
-    private function resolve(Request $request, string $report): array
-    {
-        abort_unless(ReportCatalog::has($report), 404);
-
-        $definition = ReportCatalog::definitions()[$report];
-
-        abort_unless($request->user()->can($definition['permission']), 403);
-
-        $data = $request->validate([
-            'columns' => ['sometimes', 'array'],
-            'columns.*' => [Rule::in(array_keys($definition['columns']))],
-            'from' => ['nullable', 'date'],
-            'to' => ['nullable', 'date', 'after_or_equal:from'],
-        ]);
-
-        $columns = $data['columns'] ?? [];
-
-        if ($columns === []) {
-            // Tanpa pilihan eksplisit (mis. link langsung), tampilkan semua
-            // kolom whitelist laporan.
-            $columns = array_keys($definition['columns']);
-        }
-
-        return [$definition, $columns, [
-            'from' => $data['from'] ?? null,
-            'to' => $data['to'] ?? null,
-        ]];
-    }
-
-    /**
-     * Query laporan: model ter-scope sekolah + filter periode opsional.
-     */
-    private function query(array $definition, array $columns, array $filters): Builder
-    {
-        $query = $definition['model']::query();
-
-        $dateColumn = $definition['date_column'];
-
-        if ($dateColumn !== null) {
-            if ($filters['from'] !== null) {
-                $query->whereDate($dateColumn, '>=', $filters['from']);
-            }
-
-            if ($filters['to'] !== null) {
-                $query->whereDate($dateColumn, '<=', $filters['to']);
-            }
-
-            return $query->orderByDesc($dateColumn);
-        }
-
-        return $query->orderBy('id');
-    }
-
-    private function exportLimit(): int
-    {
-        return (int) config('reports.export_limit', ReportCatalog::EXPORT_LIMIT);
     }
 }
