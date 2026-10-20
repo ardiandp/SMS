@@ -16,6 +16,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FinalGradeController;
 use App\Http\Controllers\GradingPolicyController;
+use App\Http\Controllers\QuizQuestionsController;
 use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\LetterTemplateController;
 use App\Http\Controllers\NotificationController;
@@ -227,5 +228,28 @@ Route::middleware('auth')->group(function () {
         Route::get('portal/students/{student}/grades', [PortalController::class, 'grades'])->name('portal.grades');
         Route::get('portal/students/{student}/report-cards', [PortalController::class, 'reportCards'])->name('portal.report-cards');
         Route::get('portal/students/{student}/announcements', [PortalController::class, 'announcements'])->name('portal.announcements');
+
+        // PRD 07: Modul Tambahan - LMS: Kuis (Quiz). Authorization via
+        // QuizQuestionPolicy; ResolveSchoolContext supplies the tenant.
+        Route::prefix('admin/lms')->group(function () {
+            Route::get('quiz-questions', [QuizQuestionsController::class, 'index'])
+                ->name('quiz-questions.index');
+            Route::get('quiz-questions/create', [QuizQuestionsController::class, 'create'])
+                ->name('quiz-questions.create');
+            Route::post('quiz-questions', [QuizQuestionsController::class, 'store'])
+                ->name('quiz-questions.store');
+            Route::get('quiz-questions/{id}', [QuizQuestionsController::class, 'show'])
+                ->name('quiz-questions.show');
+            Route::get('quiz-questions/{id}/edit', [QuizQuestionsController::class, 'edit'])
+                ->name('quiz-questions.edit');
+            Route::put('quiz-questions/{id}', [QuizQuestionsController::class, 'update'])
+                ->name('quiz-questions.update');
+            Route::delete('quiz-questions/{id}', [QuizQuestionsController::class, 'destroy'])
+                ->name('quiz-questions.destroy');
+            Route::post('quiz-questions/{id}/restore', [QuizQuestionsController::class, 'restore'])
+                ->name('quiz-questions.restore');
+        });
     });
 });
+
+

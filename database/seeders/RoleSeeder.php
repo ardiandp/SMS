@@ -106,6 +106,18 @@ class RoleSeeder extends Seeder
     ];
 
     /**
+     * LMS quiz permissions (PRD-07).
+     *
+     * `view.quiz-questions` gates listing/detail; `manage.quiz-questions`
+     * gates create/update/delete/restore. Kept separate so read-only staff
+     * can review questions without mutating them.
+     */
+    private const QUIZ_PERMISSIONS = [
+        'view.quiz-questions',
+        'manage.quiz-questions',
+    ];
+
+    /**
      * Baseline roles/permissions for the platform foundation (PRD-00).
      * Roles are global; per-school assignment happens through the teams feature.
      */
@@ -121,6 +133,7 @@ class RoleSeeder extends Seeder
                 self::ASSESSMENT_PERMISSIONS,
                 self::PROMOTION_PERMISSIONS,
                 self::COMMUNICATION_PERMISSIONS,
+                self::QUIZ_PERMISSIONS,
             ),
             'school-admin' => array_merge(
                 self::ADMIN_PERMISSIONS,
@@ -129,6 +142,7 @@ class RoleSeeder extends Seeder
                 self::ASSESSMENT_PERMISSIONS,
                 self::PROMOTION_PERMISSIONS,
                 self::COMMUNICATION_PERMISSIONS,
+                self::QUIZ_PERMISSIONS,
             ),
             'staff' => [
                 'view.dashboard',
