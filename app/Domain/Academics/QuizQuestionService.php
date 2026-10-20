@@ -33,6 +33,14 @@ class QuizQuestionService
                 ['school_id'],
             );
 
+            if (! empty($data['quiz_id'])) {
+                $this->guard->assertSameSchool(
+                    (int) $question->school_id,
+                    $question->quiz,
+                    ['school_id'],
+                );
+            }
+
             foreach (['academic_year_id', 'subject_id', 'study_group_id'] as $required) {
                 if (! isset($data[$required]) || $data[$required] === null) {
                     throw ValidationException::withMessages([
@@ -76,6 +84,14 @@ class QuizQuestionService
             // Ownership is checked against the ACTIVE tenant, not the record
             // itself — comparing the record to itself would always pass.
             $this->guard->assertSameSchool($this->guard->activeSchoolId(), $question, ['school_id']);
+
+            if (! empty($data['quiz_id'])) {
+                $this->guard->assertSameSchool(
+                    $this->guard->activeSchoolId(),
+                    $question->quiz,
+                    ['school_id'],
+                );
+            }
 
             foreach (['academic_year_id', 'subject_id', 'study_group_id'] as $required) {
                 if (isset($data[$required]) && $data[$required] === null) {
@@ -168,6 +184,17 @@ class QuizQuestionService
         return QuizQuestion::where('school_id', $schoolId)
             ->where('subject_id', $subjectId)
             ->where('study_group_id', $studyGroupId)
+            ->where('is_active', true)
+            ->orderBy('created_at');
+    }
+
+    /**
+     * Get active questions belonging to a specific quiz within the school.
+     */
+    public function getByQuiz(int $schoolId, int $quizId): Builder
+    {
+        return QuizQuestion::where('school_id', $schoolId)
+            ->where('quiz_id', $quizId)
             ->where('is_active', true)
             ->orderBy('created_at');
     }

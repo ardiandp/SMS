@@ -115,6 +115,8 @@ class RoleSeeder extends Seeder
     private const QUIZ_PERMISSIONS = [
         'view.quiz-questions',
         'manage.quiz-questions',
+        'view.quizzes',
+        'manage.quizzes',
     ];
 
     /**

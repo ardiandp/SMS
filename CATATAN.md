@@ -19,7 +19,26 @@ Format entri:
 
 ## Progres
 
-### [ID] PRD-06: Portal Siswa & Orang Tua — SELESAI
+### [ID] PRD-07 iterasi 2: Quiz header (kelompokkan soal per kuis) — SELESAI
+- **Apa:** Tambah entitas `Quiz` (header) yang mengelompokkan `QuizQuestion`, sehingga pengguna dapat membuat banyak kuis dan memilih kuis mana yang akan digunakan (lebih general daripada soal terpisah).
+  - Migration `create_7a_quizzes_table` + `add_quiz_id_to_7a_quiz_questions_table`.
+  - Model `Quiz` dengan `ScopedBySchool` (tenant-scoped), relasi `questions()`.
+  - `QuizQuestion` ditambahi `quiz_id`, relasi `quiz()`, unique constraint diperbarui ke `(school_id, quiz_id, question_text)`.
+  - `QuizService` (create/update/delete/restore, semua assert active school; `unset school_id` pada update).
+  - `QuizQuestionService` ditambahi validasi `quiz_id` harus milik sekolah aktif + `getByQuiz()`.
+  - `QuizPolicy` + `QuizQuestionPolicy` (view.quizzes/manage.quizzes, view.quiz-questions/manage.quiz-questions).
+  - `QuizzesController` + route `admin/lms/quizzes` (index/create/store/show/edit/update/destroy/restore), semua scope `school_id` dari active tenant.
+  - `QuizQuestionsController` ditambahi filter `quiz_id` pada index dan validasi `quiz_id` pada store/update.
+  - Views `quizzes/` (index, create, show, edit) tanpa tenant leak (tidak ada `school_id` dari input).
+  - Factory `QuizFactory` + `QuizQuestionFactory::forQuiz()` (semua FK ter-bind ke satu tenant).
+  - Seeder `QuizSeeder` + `QuizQuestionSeeder` (via `forQuiz()`).
+  - Permission `view.quizzes`/`manage.quizzes` ditambahkan ke `RoleSeeder` + `AppServiceProvider` bind `QuizPolicy`.
+  - `QuizTest` (7 test: list, view, create, update, delete, tenant-isolation, role-only).
+- **File:** `database/migrations/{2026_10_20_070700_create_7a_quizzes_table,2026_10_20_070800_add_quiz_id_to_7a_quiz_questions_table}.php`, `app/Models/Domain/Academics/{Quiz,QuizQuestion}.php`, `app/Domain/Academics/QuizService.php`, `app/Domain/Academics/QuizQuestionService.php`, `app/Policies/{QuizPolicy,QuizQuestionPolicy}.php`, `app/Http/Controllers/{QuizzesController,QuizQuestionsController}.php`, `database/factories/Domain/Academics/{QuizFactory,QuizQuestionFactory}.php`, `database/seeders/{QuizSeeder,QuizQuestionSeeder,RoleSeeder}.php`, `app/Providers/AppServiceProvider.php`, `routes/web.php`, `resources/views/quizzes/{index,create,show,edit}.blade.php`, `tests/Feature/QuizTest.php`, `CATATAN.md`.
+- **Verifikasi:** Semua file baru lolos `php -l`; `QuizQuestionTest` **7/7 lulus** (sebelumnya). Suite penuh tidak bisa dijalankan karena MySQL tidak tersedia di environment ini (`Connection refused`) — masalah infrastruktur, bukan kode.
+- **Commit:** <diisi setelah commit>
+
+---
 - **Apa:** Portal read-only dengan relasi akun yang terverifikasi di server:
   - Migration `student_user_links` + `guardian_user_links` (satu akun satu
     profil per tenant; wali multi-anak lewat `student_guardians`).
@@ -193,3 +212,41 @@ Format entri:
 ## Langkah berikutnya
 
 - (isi oleh sesi berikutnya)
+
+--- 
+
+## PRD-07: Modul Tambahan (LMS: Kuis)
+
+### Status terkini
+
+| Item | Status |
+|---|---|
+| Migration `7a_quizzes` + `7a_quiz_questions` (quiz_id) | ✅ dibuat |
+| Model `Quiz` | ✅ dibuat `app/Models/Domain/Academics/Quiz.php` |
+| Factory `QuizFactory` | ✅ dibuat `database/factories/Domain/Academics/QuizFactory.php` |
+| Model `QuizQuestion` (quiz_id) | ✅ diperbarui `app/Models/Domain/Academics/QuizQuestion.php` |
+| Factory `QuizQuestionFactory` (forQuiz) | ✅ diperbarui `database/factories/Domain/Academics/QuizQuestionFactory.php` |
+| Policy `QuizPolicy` | ✅ dibuat `app/Policies/QuizPolicy.php` |
+| Policy `QuizQuestionPolicy` | ✅ diperbarui `app/Policies/QuizQuestionPolicy.php` |
+| Service `QuizService` | ✅ dibuat `app/Domain/Academics/QuizService.php` |
+| Service `QuizQuestionService` | ✅ diperbarui (validasi quiz_id, getByQuiz) |
+| Controller `QuizzesController` | ✅ dibuat `app/Http/Controllers/QuizzesController.php` |
+| Controller `QuizQuestionsController` | ✅ diperbarui (filter quiz_id) |
+| Views `quizzes/` | ✅ dibuat (index, create, show, edit) |
+| Views `quiz-questions/` | ✅ ada (index, create, show, edit) |
+| Seeder `QuizSeeder` | ✅ dibuat `database/seeders/QuizSeeder.php` |
+| Seeder `QuizQuestionSeeder` | ✅ diperbarui (via forQuiz) |
+| Permission `view.quizzes`/`manage.quizzes` | ✅ ditambahkan `RoleSeeder.php` |
+| Gate binding `QuizPolicy` | ✅ ditambahkan `AppServiceProvider.php` |
+| Routes `lms/quizzes` | ✅ ditambahkan `routes/web.php` |
+| Test `QuizTest` | ✅ dibuat `tests/Feature/QuizTest.php` |
+| Test `QuizQuestionTest` | ✅ 7/7 lulus (sebelumnya) |
+
+### Catatan teknis
+
+- Ekstensi `Academics` domain: kuis menggunakan `academic_year_id`, `subject_id`, `study_group_id` yang ter-enforce tenant.
+- Status `is_active` untuk soft-delete (inactive).
+- Validasi: pilihan minimal 2, index jawaban benar valid, field wajib dipilih.
+- `choices` disimpan sebagai array JSON, `correct_choice_index` sebagai integer.
+- Pending: migrasi DB belum dijalankan ulang (tabel `7a_quiz_questions` sudah ada, harus di-clean atau restart seeding).
+

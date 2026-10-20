@@ -17,6 +17,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FinalGradeController;
 use App\Http\Controllers\GradingPolicyController;
 use App\Http\Controllers\QuizQuestionsController;
+use App\Http\Controllers\QuizzesController;
 use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\LetterTemplateController;
 use App\Http\Controllers\NotificationController;
@@ -248,6 +249,25 @@ Route::middleware('auth')->group(function () {
                 ->name('quiz-questions.destroy');
             Route::post('quiz-questions/{id}/restore', [QuizQuestionsController::class, 'restore'])
                 ->name('quiz-questions.restore');
+
+            // PRD 07 iterasi 2: kuis (header) yang mengelompokkan soal,
+            // sehingga berbagai kuis dapat dibuat dan dipilih sesuai keinginan.
+            Route::get('quizzes', [QuizzesController::class, 'index'])
+                ->name('quizzes.index');
+            Route::get('quizzes/create', [QuizzesController::class, 'create'])
+                ->name('quizzes.create');
+            Route::post('quizzes', [QuizzesController::class, 'store'])
+                ->name('quizzes.store');
+            Route::get('quizzes/{id}', [QuizzesController::class, 'show'])
+                ->name('quizzes.show');
+            Route::get('quizzes/{id}/edit', [QuizzesController::class, 'edit'])
+                ->name('quizzes.edit');
+            Route::put('quizzes/{id}', [QuizzesController::class, 'update'])
+                ->name('quizzes.update');
+            Route::delete('quizzes/{id}', [QuizzesController::class, 'destroy'])
+                ->name('quizzes.destroy');
+            Route::post('quizzes/{id}/restore', [QuizzesController::class, 'restore'])
+                ->name('quizzes.restore');
         });
     });
 });

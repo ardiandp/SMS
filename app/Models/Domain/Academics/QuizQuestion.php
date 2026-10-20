@@ -16,6 +16,7 @@ class QuizQuestion extends Model
     protected $table = '7a_quiz_questions';
 
     protected $fillable = [
+        'quiz_id',
         'school_id',
         'academic_year_id',
         'subject_id',
@@ -55,5 +56,11 @@ class QuizQuestion extends Model
     public function studyGroup(): BelongsTo
     {
         return $this->belongsTo(\App\Models\StudyGroup::class);
+    }
+
+    /** @return BelongsTo<\App\Models\Domain\Academics\Quiz, $this> */
+    public function quiz(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Domain\Academics\Quiz::class, 'quiz_id');
     }
 }

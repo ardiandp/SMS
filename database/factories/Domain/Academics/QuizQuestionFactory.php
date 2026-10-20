@@ -2,6 +2,7 @@
 
 namespace Database\Factories\Domain\Academics;
 
+use App\Models\Domain\Academics\Quiz;
 use App\Models\Domain\Academics\QuizQuestion;
 use App\Models\AcademicYear;
 use App\Models\School;
@@ -25,6 +26,7 @@ class QuizQuestionFactory extends Factory
         $correctIndex = array_search($correct, array_keys($choices));
 
         return [
+            'quiz_id' => Quiz::factory(),
             'school_id' => School::factory(),
             'academic_year_id' => AcademicYear::factory(),
             'subject_id' => Subject::factory(),
@@ -53,6 +55,17 @@ class QuizQuestionFactory extends Factory
                 ?? School::factory()->create()->getKey();
 
             $question->school_id = $schoolId;
+
+            // Ensure quiz belongs to the same school.
+            $quiz = $question->getRelationValue('quiz');
+            if ($quiz === null && empty($question->getAttributes()['quiz_id'] ?? null)) {
+                $question->quiz_id = Quiz::factory()->create(['school_id' => $schoolId])->getKey();
+            } elseif (! empty($question->getAttributes()['quiz_id'] ?? null)) {
+                $owner = Quiz::withoutGlobalScopes()->find($question->getAttributes()['quiz_id']);
+                if ($owner !== null && (int) $owner->school_id !== (int) $schoolId) {
+                    $question->quiz_id = Quiz::factory()->create(['school_id' => $schoolId])->getKey();
+                }
+            }
 
             foreach (['academicYear' => AcademicYear::class, 'subject' => Subject::class, 'studyGroup' => StudyGroup::class] as $relation => $class) {
                 $fk = match ($relation) {
@@ -95,6 +108,20 @@ class QuizQuestionFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'difficulty' => 'hard',
+        ]);
+    }
+
+    /**
+     * Scope the question to an existing quiz instead of creating a new one.
+     */
+    public function forQuiz(Quiz $quiz): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'quiz_id' => $quiz->getKey(),
+            'school_id' => $quiz->school_id,
+            'academic_year_id' => $quiz->academic_year_id,
+            'subject_id' => $quiz->subject_id,
+            'study_group_id' => $quiz->study_group_id,
         ]);
     }
 }
