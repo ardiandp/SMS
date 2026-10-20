@@ -23,7 +23,7 @@ Format entri:
 - **Apa:** Tambah pemanggilan 3 seeder kuis (QuizSeeder, QuizQuestionSeeder, QuizSubmissionSeeder) di akhir `DemoSeeder::run()` beserta import-nya, sehingga data dummy kuis tersedia saat menjalankan `php artisan db:seed --class=DemoSeeder`.
 - **File:** `database/seeders/DemoSeeder.php`
 - **Verifikasi:** `php -l` lolos untuk DemoSeeder, QuizSeeder, QuizQuestionSeeder, QuizSubmissionSeeder. Suite penuh tidak bisa dijalankan karena MySQL tidak tersedia (`Connection refused`).
-- **Commit:** <diisi setelah commit>
+- **Commit:** 8d40fc5 feat(seeder): daftarkan QuizSeeder, QuizQuestionSeeder, QuizSubmissionSeeder di DemoSeeder
 
 ---
 
