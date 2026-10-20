@@ -124,4 +124,51 @@ class TenantAccessTest extends TestCase
             ->get('/dashboard')
             ->assertRedirect('/schools');
     }
+
+    /**
+     * PRD-08: Uji isolasi lintas tenant pada domain kritis.
+     *
+     * Memastikan data dari sekolah B tidak bocor ke user sekolah A
+     * melalui rute akademik utama (siswa).
+     */
+    public function test_cannot_access_another_tenant_student(): void
+    {
+        $userA = User::factory()->create();
+        $userB = User::factory()->create();
+        $schoolA = School::factory()->create(['name' => 'Sekolah A']);
+        $schoolB = School::factory()->create(['name' => 'Sekolah B']);
+
+        SchoolUserMembership::factory()->create(['school_id' => $schoolA->id, 'user_id' => $userA->id]);
+        SchoolUserMembership::factory()->create(['school_id' => $schoolB->id, 'user_id' => $userB->id]);
+
+        $this->actingAs($userA)->post("/schools/{$schoolA->id}/switch")->assertRedirect('/dashboard');
+
+        // Buat siswa di school B dan coba akses dari school A.
+        $studentB = \App\Models\Student::factory()->create(['school_id' => $schoolB->id]);
+
+        $response = $this->actingAs($userA)->get("/students/{$studentB->id}");
+
+        $response->assertStatus(404);
+    }
+
+    public function test_students_list_only_shows_current_tenant(): void
+    {
+        $userA = User::factory()->create();
+        $schoolA = School::factory()->create(['name' => 'Sekolah A']);
+        $schoolB = School::factory()->create(['name' => 'Sekolah B']);
+
+        SchoolUserMembership::factory()->create(['school_id' => $schoolA->id, 'user_id' => $userA->id]);
+        SchoolUserMembership::factory()->create(['school_id' => $schoolB->id, 'user_id' => $userA->id]);
+
+        $this->actingAs($userA)->post("/schools/{$schoolA->id}/switch")->assertRedirect('/dashboard');
+
+        // Siswa school B dibuat tetapi seharusnya tidak muncul saat aktif di school A.
+        \App\Models\Student::factory()->count(3)->create(['school_id' => $schoolB->id]);
+        \App\Models\Student::factory()->count(2)->create(['school_id' => $schoolA->id]);
+
+        $response = $this->actingAs($userA)->get('/students');
+
+        $response->assertOk();
+        $response->assertSeeInOrder(['Sekolah A']);
+    }
 }
