@@ -19,11 +19,19 @@ Format entri:
 
 ## Progres
 
+### [ID] Fix: DemoSeeder terdaftar QuizSeeder, QuizQuestionSeeder, QuizSubmissionSeeder — SELESAI
+- **Apa:** Tambah pemanggilan 3 seeder kuis (QuizSeeder, QuizQuestionSeeder, QuizSubmissionSeeder) di akhir `DemoSeeder::run()` beserta import-nya, sehingga data dummy kuis tersedia saat menjalankan `php artisan db:seed --class=DemoSeeder`.
+- **File:** `database/seeders/DemoSeeder.php`
+- **Verifikasi:** `php -l` lolos untuk DemoSeeder, QuizSeeder, QuizQuestionSeeder, QuizSubmissionSeeder. Suite penuh tidak bisa dijalankan karena MySQL tidak tersedia (`Connection refused`).
+- **Commit:** <diisi setelah commit>
+
+---
+
 ### [ID] Fix: QuizSubmission index menampilkan semua status termasuk draft — SELESAI
 - **Apa:** Perbaiki `QuizSubmissionsController@index` agar tidak mengecualikan submission draft (sebelumnya pakai `getActive()` yang filter `status != 'draft'`), sehingga filter "Draft" di view dan aksi draft (Ubah/Hapus/Kumpulkan) berfungsi.
 - **File:** `app/Http/Controllers/QuizSubmissionsController.php`
 - **Verifikasi:** `php -l` lolos; `QuizSubmission` sudah diimpor (baris 8). Suite penuh tidak bisa dijalankan karena MySQL tidak tersedia (`Connection refused`).
-- **Commit:** <diisi setelah commit>
+- **Commit:** 1d020ab fix(quiz-submissions): index menampilkan semua status termasuk draft
 
 ---
 

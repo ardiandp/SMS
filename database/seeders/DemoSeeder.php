@@ -55,6 +55,9 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Http\UploadedFile;
+use Database\Seeders\QuizSeeder;
+use Database\Seeders\QuizQuestionSeeder;
+use Database\Seeders\QuizSubmissionSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -1048,6 +1051,11 @@ class DemoSeeder extends Seeder
             ->take(2)
             ->get()
             ->each(fn ($card) => $reportCards->publish($card->student, $yearActive, $semesterGanjil, $admin));
+
+        // PRD-07: Data dummy kuis (LMS) — kuis, soal, dan submission siswa.
+        $this->call(QuizSeeder::class);
+        $this->call(QuizQuestionSeeder::class);
+        $this->call(QuizSubmissionSeeder::class);
     }
 
     /**
