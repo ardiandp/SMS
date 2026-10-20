@@ -33,7 +33,7 @@ Format entri:
   - `QuizSubmissionTest` (9 test: list, view, create, update, submit, grade, delete, tenant-isolation, role-only).
 - **File:** `database/migrations/2026_10_20_070900_create_7a_quiz_submissions_table.php`, `app/Models/Domain/Academics/QuizSubmission.php`, `app/Domain/Academics/QuizSubmissionService.php`, `app/Policies/QuizSubmissionPolicy.php`, `app/Http/Controllers/QuizSubmissionsController.php`, `database/factories/Domain/Academics/QuizSubmissionFactory.php`, `database/seeders/QuizSubmissionSeeder.php`, `database/seeders/RoleSeeder.php`, `app/Providers/AppServiceProvider.php`, `routes/web.php`, `resources/views/quiz-submissions/{index,show}.blade.php`, `tests/Feature/QuizSubmissionTest.php`, `CATATAN.md`.
 - **Verifikasi:** Semua file baru lolos `php -l`; `QuizQuestionTest` dan `QuizTest` **lulus** (sebelumnya). Suite penuh tidak bisa dijalankan karena MySQL tidak tersedia di environment ini (`Connection refused`) — masalah infrastruktur, bukan kode.
-- **Commit:** <diisi setelah commit>
+- **Commit:** 5ce5627 feat(quiz-submissions): PRD-07 iterasi 3 - Pengumpulan jawaban kuis oleh siswa
 
 ---
 - **Apa:** Tambah entitas `Quiz` (header) yang mengelompokkan `QuizQuestion`, sehingga pengguna dapat membuat banyak kuis dan memilih kuis mana yang akan digunakan (lebih general daripada soal terpisah).
@@ -227,7 +227,8 @@ Format entri:
 
 ## Langkah berikutnya
 
-- (isi oleh sesi berikutnya)
+- Verifikasi ulang migrasi `7a_quiz_questions` dan `7a_quiz_submissions` serta jalankan `migrate:fresh --seed` setelah MySQL tersedia (saat ini diblokir infrastruktur: `Connection refused`).
+- PRD-07 (LMS: Kuis) iterasi 1–3 telah selesai; belum ada PRD-08, siapkan rencana modul selanjutnya jika ada.
 
 --- 
 
