@@ -16,6 +16,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FinalGradeController;
 use App\Http\Controllers\GradingPolicyController;
+use App\Http\Controllers\HealthController;
 use App\Http\Controllers\QuizQuestionsController;
 use App\Http\Controllers\QuizSubmissionsController;
 use App\Http\Controllers\QuizzesController;
@@ -43,6 +44,9 @@ Route::get('/', function () {
         : redirect()->route('login');
 });
 
+// Health check untuk monitoring produksi (tidak memerlukan autentikasi).
+Route::get('/health', [HealthController::class, 'show'])->name('health');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'store'])
@@ -63,7 +67,9 @@ Route::middleware('auth')->group(function () {
         // Harus sebelum Route::resource('students') agar tidak tertangkap {student}.
         Route::get('/students/import', [StudentImportController::class, 'create'])->name('students.import.create');
         Route::post('/students/import', [StudentImportController::class, 'preview'])->name('students.import.preview');
-        Route::post('/students/import/commit', [StudentImportController::class, 'commit'])->name('students.import.commit');
+        Route::post('/students/import/commit', [StudentImportController::class, 'commit'])
+            ->middleware('throttle:10,1')
+            ->name('students.import.commit');
         Route::post('/students/import/cancel', [StudentImportController::class, 'cancel'])->name('students.import.cancel');
 
         Route::resource('students', StudentController::class);
@@ -280,8 +286,10 @@ Route::middleware('auth')->group(function () {
             Route::put('quiz-submissions/{id}', [QuizSubmissionsController::class, 'update'])
                 ->name('quiz-submissions.update');
             Route::post('quiz-submissions/{id}/submit', [QuizSubmissionsController::class, 'submit'])
+                ->middleware('throttle:30,1')
                 ->name('quiz-submissions.submit');
             Route::post('quiz-submissions/{id}/grade', [QuizSubmissionsController::class, 'grade'])
+                ->middleware('throttle:30,1')
                 ->name('quiz-submissions.grade');
             Route::delete('quiz-submissions/{id}', [QuizSubmissionsController::class, 'destroy'])
                 ->name('quiz-submissions.destroy');
